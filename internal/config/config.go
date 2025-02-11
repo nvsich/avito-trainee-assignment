@@ -13,7 +13,7 @@ type Config struct {
 	HTTP `yaml:"http"`
 	JWT  `yaml:"jwt"`
 	Log  `yaml:"log"`
-	PG   `yaml:"postgres"`
+	PG   `yaml:"pg"`
 }
 
 type HTTP struct {
@@ -22,7 +22,7 @@ type HTTP struct {
 
 type JWT struct {
 	SignKey  string        `env-required:"true" yaml:"signKey" env:"JWT_SIGN_KEY"`
-	TokenTTL time.Duration `env-required:"true" yaml:"token_ttl" env:"JWT_TOKEN_TTL"`
+	TokenTTL time.Duration `env-required:"true" yaml:"tokenTTL" env:"JWT_TOKEN_TTL"`
 }
 
 type Log struct {
