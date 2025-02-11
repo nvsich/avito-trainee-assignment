@@ -1,6 +1,10 @@
 package config
 
-import "time"
+import (
+	"fmt"
+	"github.com/ilyakaznacheev/cleanenv"
+	"time"
+)
 
 // TODO: hide vulnerable vals in .env
 
@@ -26,4 +30,20 @@ type Log struct {
 
 type PG struct {
 	URL string `env-required:"true" yaml:"url" env:"PG_URL"`
+}
+
+func Load(configPath string) (*Config, error) {
+	cfg := &Config{}
+
+	err := cleanenv.ReadConfig(configPath, cfg)
+	if err != nil {
+		return nil, fmt.Errorf("error reading config file: %w", err)
+	}
+
+	err = cleanenv.UpdateEnv(cfg)
+	if err != nil {
+		return nil, fmt.Errorf("error updating env: %w", err)
+	}
+
+	return cfg, nil
 }
