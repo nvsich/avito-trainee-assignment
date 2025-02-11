@@ -23,7 +23,7 @@ create table employees
 (
     id           uuid primary key,
     login        text not null unique,
-    passwordHash text not null,
+    password_hash text not null,
     balance      int  not null
 );
 
