@@ -1,0 +1,12 @@
+http:
+  port: 8080
+
+log:
+  level: 'debug'
+
+jwt:
+  signKey: "x5iYAo40ElnqGxURcvVE26S9HdiNag+jlYIQy7bt4K8="
+  tokenTTL: 5m
+
+pg:
+  url: "postgres://postgres:password@db:5432/shop"
