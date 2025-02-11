@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"github.com/ilyakaznacheev/cleanenv"
+	"log"
 	"time"
 )
 
@@ -32,18 +33,18 @@ type PG struct {
 	URL string `env-required:"true" yaml:"url" env:"PG_URL"`
 }
 
-func Load(configPath string) (*Config, error) {
+func MustLoad(configPath string) *Config {
 	cfg := &Config{}
 
 	err := cleanenv.ReadConfig(configPath, cfg)
 	if err != nil {
-		return nil, fmt.Errorf("error reading config file: %w", err)
+		log.Fatal(fmt.Errorf("error reading config file: %w", err))
 	}
 
 	err = cleanenv.UpdateEnv(cfg)
 	if err != nil {
-		return nil, fmt.Errorf("error updating env: %w", err)
+		log.Fatal(fmt.Errorf("error updating env: %w", err))
 	}
 
-	return cfg, nil
+	return cfg
 }
