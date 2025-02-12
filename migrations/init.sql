@@ -1,5 +1,7 @@
 -- TODO: это up.sql, todo сделать .down.sql
 -- TODO: create table if not exists
+-- TODO: create indexes
+
 create table products
 (
     id    uuid primary key,
@@ -47,7 +49,7 @@ create table employee_inventory
 --     date        timestamp not null
 -- );
 
-create table transactions
+create table transfers
 (
     id            uuid primary key,
     from_employee uuid not null,
