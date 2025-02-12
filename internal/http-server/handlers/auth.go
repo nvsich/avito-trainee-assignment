@@ -38,12 +38,13 @@ func NewAuthHandlerFunc(log *slog.Logger, authService Auth) http.HandlerFunc {
 			return
 		}
 
-		log.Debug("request body successfully decoded", slog.String("username", request.Username))
+		log.Debug("request body successfully decoded")
 
 		if err = validator.New().Struct(request); err != nil {
 			var validateErr validator.ValidationErrors
 			errors.As(err, &validateErr)
-			log.Error("invalid request", slog.String("validation_error", validateErr.Error()))
+
+			log.Error("invalid request", sl.Err(err))
 
 			render.Status(r, http.StatusBadRequest)
 			render.JSON(w, r, resp.ErrorResponse{Errors: "invalid request body"})
