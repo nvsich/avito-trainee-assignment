@@ -20,7 +20,7 @@ type Auth interface {
 
 func NewAuthHandlerFunc(log *slog.Logger, authService Auth) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		const op = "http-server.handlers.auth.New"
+		const op = "http-server.handlers.NewAuthHandlerFunc"
 
 		log = log.With(
 			slog.String("operation", op),
