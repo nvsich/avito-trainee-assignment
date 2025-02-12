@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgconn"
 )
 
 type PGEmployeeRepo struct {
@@ -19,7 +18,7 @@ func NewPGEmployeeRepo(p *Postgres) *PGEmployeeRepo {
 }
 
 func (r *PGEmployeeRepo) Save(ctx context.Context, employee *model.Employee) error {
-	const op = "repo.pgdb.Save"
+	const op = "repo.pgdb.PGEmployeeRepo.Save"
 
 	query, args, err := r.Builder.
 		Insert("employees").
@@ -33,12 +32,6 @@ func (r *PGEmployeeRepo) Save(ctx context.Context, employee *model.Employee) err
 
 	_, err = r.Pool.Exec(ctx, query, args...)
 	if err != nil {
-		var pgErr *pgconn.PgError
-		if ok := errors.As(err, &pgErr); ok {
-			if pgErr.Code == "23505" {
-				return repo.ErrEmployeeExists
-			}
-		}
 		return fmt.Errorf("%s: %w", op, err)
 	}
 
@@ -46,7 +39,7 @@ func (r *PGEmployeeRepo) Save(ctx context.Context, employee *model.Employee) err
 }
 
 func (r *PGEmployeeRepo) FindByLogin(ctx context.Context, login string) (*model.Employee, error) {
-	const op = "repo.pgdb.FindByLogin"
+	const op = "repo.pgdb.PGEmployeeRepo.FindByLogin"
 
 	query, args, err := r.Builder.
 		Select("id, login, password_hash, balance").
@@ -75,4 +68,26 @@ func (r *PGEmployeeRepo) FindByLogin(ctx context.Context, login string) (*model.
 	}
 
 	return &employee, nil
+}
+
+func (r *PGEmployeeRepo) UpdateByLogin(ctx context.Context, login string, employee *model.Employee) error {
+	const op = "repo.pgdb.PGEmployeeRepo.UpdateByLogin"
+
+	query, args, err := r.Builder.
+		Update("employees").
+		Set("password_hash", employee.PasswordHash).
+		Set("balance", employee.Balance).
+		Where("login = ?", login).
+		ToSql()
+
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	_, err = r.Pool.Exec(ctx, query, args...)
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	return nil
 }
