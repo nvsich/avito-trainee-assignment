@@ -2,7 +2,7 @@ package model
 
 import "github.com/google/uuid"
 
-type Transaction struct {
+type Transfer struct {
 	Id           uuid.UUID
 	FromEmployee uuid.UUID
 	ToEmployee   uuid.UUID

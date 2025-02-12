@@ -20,11 +20,6 @@ type TokenClaims struct {
 	Login      string
 }
 
-type EmployeeRepo interface {
-	Save(ctx context.Context, employee *model.Employee) error
-	FindByLogin(ctx context.Context, login string) (*model.Employee, error)
-}
-
 type AuthService struct {
 	employeeRepo EmployeeRepo
 	signKey      string
