@@ -2,6 +2,7 @@ package pgdb
 
 import (
 	"context"
+	"fmt"
 	"github.com/Masterminds/squirrel"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -30,17 +31,18 @@ type Postgres struct {
 }
 
 func New(dsn string) (*Postgres, error) {
+	const op = "repo.pgdb.New"
 	p := &Postgres{}
 	p.Builder = squirrel.StatementBuilder.PlaceholderFormat(squirrel.Dollar)
 
 	poolConfig, err := pgxpool.ParseConfig(dsn)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 
 	p.Pool, err = pgxpool.NewWithConfig(context.Background(), poolConfig)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 
 	return p, nil
