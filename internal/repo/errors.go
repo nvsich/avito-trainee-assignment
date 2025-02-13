@@ -7,6 +7,4 @@ var (
 	ErrEmployeeNotFound = errors.New("employee not found")
 
 	ErrItemNotFound = errors.New("item not found")
-
-	ErrNoChange = errors.New("no change")
 )
