@@ -6,5 +6,6 @@ var (
 	ErrEmployeeExists   = errors.New("employee already exists")
 	ErrEmployeeNotFound = errors.New("employee not found")
 
-	ErrItemNotFound = errors.New("item not found")
+	ErrItemNotFound              = errors.New("item not found")
+	ErrEmployeeInventoryNotFound = errors.New("employee inventory not found")
 )

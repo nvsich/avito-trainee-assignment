@@ -35,9 +35,12 @@ func Run(configPath string) {
 	trManager := manager.Must(trmpgx.NewDefaultFactory(pg.Pool))
 	pgEmployeeRepo := pgdb.NewPGEmployeeRepo(pg, trmpgx.DefaultCtxGetter)
 	pgTransferRepo := pgdb.NewPGTransferRepo(pg, trmpgx.DefaultCtxGetter)
+	pgItemRepo := pgdb.NewPGItemRepo(pg, trmpgx.DefaultCtxGetter)
+	pgInventoryRepo := pgdb.NewPgInventoryRepo(pg, trmpgx.DefaultCtxGetter)
 
 	authService := service.NewAuthService(pgEmployeeRepo, cfg.JWT.SignKey, cfg.JWT.TokenTTL)
 	transferService := service.NewTransferService(trManager, pgEmployeeRepo, pgTransferRepo)
+	buyItemService := service.NewItemService(trManager, pgItemRepo, pgEmployeeRepo, pgInventoryRepo)
 
 	router := chi.NewRouter()
 	router.Use(middleware.RequestID)
@@ -47,6 +50,7 @@ func Run(configPath string) {
 	router.Group(func(router chi.Router) {
 		router.Use(mw.NewJwtAuth(log, cfg.JWT.SignKey))
 		router.Post("/api/sendCoin", handlers.NewSendCoinsHandlerFunc(log, transferService))
+		router.Post("/api/buy/{item}", handlers.NewBuyItemHandlerFunc(log, buyItemService))
 	})
 
 	log.Info("starting server", slog.String("port", cfg.HTTP.Port))

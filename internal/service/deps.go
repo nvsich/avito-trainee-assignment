@@ -3,6 +3,7 @@ package service
 import (
 	"avito-shop/internal/model"
 	"context"
+	"github.com/google/uuid"
 )
 
 type EmployeeRepo interface {
@@ -21,4 +22,6 @@ type ItemRepo interface {
 
 type InventoryRepo interface {
 	Save(ctx context.Context, inventory *model.EmployeeInventory) error
+	FindByEmployeeAndItem(ctx context.Context, employeeId uuid.UUID, itemId uuid.UUID) (*model.EmployeeInventory, error)
+	UpdateById(ctx context.Context, id uuid.UUID, employeeInventory *model.EmployeeInventory) error
 }

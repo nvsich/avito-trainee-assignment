@@ -10,6 +10,7 @@ var (
 	ErrReceiverNotFound       = errors.New("receiver not found")
 	ErrSenderNotFound         = errors.New("sender not found")
 
-	ErrEmployeeNotFound = errors.New("employee not found")
-	ErrItemNotFound     = errors.New("item not found")
+	ErrEmployeeNotFound  = errors.New("employee not found")
+	ErrItemNotFound      = errors.New("item not found")
+	ErrInventoryNotFound = errors.New("inventory not found")
 )

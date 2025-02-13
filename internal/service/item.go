@@ -31,7 +31,9 @@ func NewItemService(
 	}
 }
 
-func (s *ItemService) BuyItem(ctx context.Context, itemName string, login string) error {
+// TODO: what if we need rollback?
+
+func (s *ItemService) Buy(ctx context.Context, itemName string, login string) error {
 	const op = "service.ItemService.BuyItem"
 
 	err := s.trManager.Do(ctx, func(ctx context.Context) error {
@@ -61,11 +63,27 @@ func (s *ItemService) BuyItem(ctx context.Context, itemName string, login string
 			return fmt.Errorf("%s: %w", op, err)
 		}
 
-		if err = s.inventoryRepo.Save(ctx, &model.EmployeeInventory{
-			Id:         uuid.New(),
-			EmployeeId: employee.Id,
-			ItemId:     item.Id,
-		}); err != nil {
+		employeeInventory, err := s.inventoryRepo.FindByEmployeeAndItem(ctx, employee.Id, item.Id)
+
+		if err != nil {
+			if errors.Is(err, repo.ErrInventoryNotFound) {
+				if err = s.inventoryRepo.Save(ctx, &model.EmployeeInventory{
+					Id:         uuid.New(),
+					EmployeeId: employee.Id,
+					ItemId:     item.Id,
+					Amount:     1,
+				}); err != nil {
+					return fmt.Errorf("%s: %w", op, err)
+				}
+				return nil
+			}
+
+			return fmt.Errorf("%s: %w", op, err)
+		}
+
+		employeeInventory.Amount++
+
+		if err = s.inventoryRepo.UpdateById(ctx, employeeInventory.Id, employeeInventory); err != nil {
 			return fmt.Errorf("%s: %w", op, err)
 		}
 
