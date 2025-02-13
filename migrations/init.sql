@@ -2,14 +2,14 @@
 -- TODO: create table if not exists
 -- TODO: create indexes
 
-create table products
+create table items
 (
     id    uuid primary key,
     name  text not null,
     price int  not null
 );
 
-insert into products(id, name, price)
+insert into items(id, name, price)
 values ('4ba3ad9c-07e2-45d5-9c3f-5c3ffcf2f6a5', 't-shirt', 80),
        ('9d1423c4-f8a6-416c-af24-3b03e8f1594e', 'cup', 20),
        ('2392fe7d-9d34-4d7f-9df0-4d5367ba5db8', 'book', 50),
@@ -33,11 +33,11 @@ create table employee_inventory
 (
     id          uuid primary key,
     employee_id uuid not null,
-    product_id  uuid not null,
+    item_id  uuid not null,
     amount      int  not null,
 
     foreign key (employee_id) references employees (id),
-    foreign key (product_id) references products (id)
+    foreign key (item_id) references items (id)
 );
 
 -- TODO: подумать надо ли это
