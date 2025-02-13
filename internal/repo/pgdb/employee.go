@@ -90,7 +90,12 @@ func (r *PGEmployeeRepo) UpdateByLogin(ctx context.Context, login string, employ
 
 	conn := r.getter.DefaultTrOrDB(ctx, r.Pool)
 
-	_, err = conn.Exec(ctx, query, args...)
+	cmdTag, err := conn.Exec(ctx, query, args...)
+
+	if cmdTag.RowsAffected() == 0 {
+		return repo.ErrNoChange
+	}
+
 	if err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}
