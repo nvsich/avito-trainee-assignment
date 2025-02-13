@@ -32,7 +32,9 @@ func (r *PGEmployeeRepo) Save(ctx context.Context, employee *model.Employee) err
 		return fmt.Errorf("%s: %w", op, err)
 	}
 
-	_, err = r.Pool.Exec(ctx, query, args...)
+	conn := r.getter.DefaultTrOrDB(ctx, r.Pool)
+
+	_, err = conn.Exec(ctx, query, args...)
 	if err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}
