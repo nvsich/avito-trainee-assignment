@@ -53,24 +53,3 @@ func (p *Postgres) Close() {
 		p.Pool.Close()
 	}
 }
-
-func (p *Postgres) RunInTx(ctx context.Context, fn func(pgx.Tx) error) error {
-	const op = "repo.pgdb.RunInTx"
-
-	tx, err := p.Pool.Begin(ctx)
-	if err != nil {
-		return fmt.Errorf("%s: %w", op, err)
-	}
-
-	err = fn(tx)
-	if err == nil {
-		return tx.Commit(ctx)
-	}
-
-	rollbackErr := tx.Rollback(ctx)
-	if rollbackErr != nil {
-		return fmt.Errorf("%s: %w", op, rollbackErr)
-	}
-
-	return fmt.Errorf("%s: %w", op, err)
-}

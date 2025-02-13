@@ -8,4 +8,5 @@ var (
 	ErrNotEnoughCoins         = errors.New("not enough coins")
 	ErrNegativeTransferAmount = errors.New("negative transfer amount")
 	ErrReceiverNotFound       = errors.New("receiver not found")
+	ErrSenderNotFound         = errors.New("sender not found")
 )

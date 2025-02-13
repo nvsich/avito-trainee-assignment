@@ -6,15 +6,17 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	trmpgx "github.com/avito-tech/go-transaction-manager/drivers/pgxv5/v2"
 	"github.com/jackc/pgx/v5"
 )
 
 type PGEmployeeRepo struct {
 	*Postgres
+	getter *trmpgx.CtxGetter
 }
 
-func NewPGEmployeeRepo(p *Postgres) *PGEmployeeRepo {
-	return &PGEmployeeRepo{p}
+func NewPGEmployeeRepo(p *Postgres, c *trmpgx.CtxGetter) *PGEmployeeRepo {
+	return &PGEmployeeRepo{p, c}
 }
 
 func (r *PGEmployeeRepo) Save(ctx context.Context, employee *model.Employee) error {
@@ -51,8 +53,10 @@ func (r *PGEmployeeRepo) FindByLogin(ctx context.Context, login string) (*model.
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 
+	conn := r.getter.DefaultTrOrDB(ctx, r.Pool)
+
 	var employee model.Employee
-	err = r.Pool.QueryRow(ctx, query, args...).
+	err = conn.QueryRow(ctx, query, args...).
 		Scan(
 			&employee.Id,
 			&employee.Login,
@@ -84,7 +88,9 @@ func (r *PGEmployeeRepo) UpdateByLogin(ctx context.Context, login string, employ
 		return fmt.Errorf("%s: %w", op, err)
 	}
 
-	_, err = r.Pool.Exec(ctx, query, args...)
+	conn := r.getter.DefaultTrOrDB(ctx, r.Pool)
+
+	_, err = conn.Exec(ctx, query, args...)
 	if err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}

@@ -87,6 +87,16 @@ func NewSendCoinsHandlerFunc(log *slog.Logger, transferService Transfer) http.Ha
 				return
 			}
 
+			// Возможно только если внедрить несуществующий логин отправителя в токен
+			// (если токен получен от приложения, то пользователь точно существует).
+			if errors.Is(err, service.ErrSenderNotFound) {
+				log.Info("failed to send coins", sl.Err(err))
+
+				render.Status(r, http.StatusBadRequest)
+				render.JSON(w, r, resp.ErrorResponse{Errors: "intern"})
+				return
+			}
+
 			log.Error("failed to send coins", sl.Err(err))
 
 			render.Status(r, http.StatusInternalServerError)

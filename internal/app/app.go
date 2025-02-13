@@ -8,6 +8,8 @@ import (
 	"avito-shop/internal/repo/pgdb"
 	"avito-shop/internal/service"
 	"context"
+	trmpgx "github.com/avito-tech/go-transaction-manager/drivers/pgxv5/v2"
+	"github.com/avito-tech/go-transaction-manager/trm/v2/manager"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"log/slog"
@@ -30,18 +32,21 @@ func Run(configPath string) {
 	}
 	defer pg.Close()
 
+	trManager := manager.Must(trmpgx.NewDefaultFactory(pg.Pool))
+	pgEmployeeRepo := pgdb.NewPGEmployeeRepo(pg, trmpgx.DefaultCtxGetter)
+	pgTransferRepo := pgdb.NewPGTransferRepo(pg, trmpgx.DefaultCtxGetter)
+
+	authService := service.NewAuthService(pgEmployeeRepo, cfg.JWT.SignKey, cfg.JWT.TokenTTL)
+	transferService := service.NewTransferService(trManager, pgEmployeeRepo, pgTransferRepo)
+
 	router := chi.NewRouter()
 	router.Use(middleware.RequestID)
 	router.Use(mw.NewLogger(log))
 
-	pgEmployeeRepo := pgdb.NewPGEmployeeRepo(pg)
-	authService := service.NewAuthService(pgEmployeeRepo, cfg.JWT.SignKey, cfg.JWT.TokenTTL)
-
 	router.Post("/api/auth", handlers.NewAuthHandlerFunc(log, authService))
 	router.Group(func(router chi.Router) {
 		router.Use(mw.NewJwtAuth(log, cfg.JWT.SignKey))
-
-		// router.Post("/api/path...) to protect
+		router.Post("/api/sendCoin", handlers.NewSendCoinsHandlerFunc(log, transferService))
 	})
 
 	log.Info("starting server", slog.String("port", cfg.HTTP.Port))
