@@ -2,7 +2,7 @@ package model
 
 import "github.com/google/uuid"
 
-type Product struct {
+type Item struct {
 	Id    uuid.UUID
 	Name  string
 	Price int
