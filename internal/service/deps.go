@@ -14,3 +14,11 @@ type EmployeeRepo interface {
 type TransferRepo interface {
 	Save(ctx context.Context, transfer *model.Transfer) error
 }
+
+type ItemRepo interface {
+	FindByName(ctx context.Context, itemName string) (*model.Item, error)
+}
+
+type InventoryRepo interface {
+	Save(ctx context.Context, inventory *model.EmployeeInventory) error
+}
