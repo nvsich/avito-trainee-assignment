@@ -73,9 +73,5 @@ func (s *InfoService) Get(ctx context.Context, username string) (*model.Employee
 		return nil
 	})
 
-	if err != nil {
-		return nil, fmt.Errorf("%s: %w", op, err)
-	}
-
-	return &employeeInfo, nil
+	return &employeeInfo, err
 }
