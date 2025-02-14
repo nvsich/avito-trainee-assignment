@@ -24,6 +24,7 @@ func Run(configPath string) {
 	server := setupServer(cfg, router)
 
 	// TODO: move running server and shutdown to different method
+
 	go func() {
 		log.Info("starting server", slog.String("addr", server.Addr))
 
