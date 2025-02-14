@@ -8,6 +8,7 @@ import (
 	"avito-shop/internal/repo/pgdb"
 	"avito-shop/internal/service"
 	"context"
+	"errors"
 	trmpgx "github.com/avito-tech/go-transaction-manager/drivers/pgxv5/v2"
 	"github.com/avito-tech/go-transaction-manager/trm/v2/manager"
 	"github.com/go-chi/chi/v5"
@@ -15,6 +16,9 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
+	"time"
 )
 
 // TODO: decompose for several steps
@@ -54,8 +58,6 @@ func Run(configPath string) {
 		router.Get("/api/info", handlers.NewInfoHandlerFunc(log, infoService))
 	})
 
-	log.Info("starting server", slog.String("port", cfg.HTTP.Port))
-
 	server := &http.Server{
 		Addr:         ":" + cfg.HTTP.Port,
 		Handler:      router,
@@ -64,13 +66,31 @@ func Run(configPath string) {
 		IdleTimeout:  cfg.HTTP.IdleTimeout,
 	}
 
-	log.Info("server started", slog.String("address", server.Addr))
+	go func() {
+		log.Info("starting server", slog.String("addr", server.Addr))
 
-	if err = server.ListenAndServe(); err != nil {
-		log.Error("failed to start server", sl.Err(err))
+		if err = server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			log.Error("listen: %s\n", err)
+		}
+	}()
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+
+	<-quit
+	log.Info("shutting down server...")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	if err = server.Shutdown(ctx); err != nil {
+		log.Error("failed to shutdown server", sl.Err(err))
 	}
 
-	// TODO: add graceful shutdown
+	select {
+	case <-ctx.Done():
+		log.Info("context done, shutting down server...")
+	}
 
-	log.Error("stopped server", sl.Err(server.Shutdown(context.Background())))
+	log.Info("server stopped")
 }

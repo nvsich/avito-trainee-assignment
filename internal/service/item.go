@@ -31,8 +31,6 @@ func NewItemService(
 	}
 }
 
-// TODO: what if we need rollback?
-
 func (s *ItemService) Buy(ctx context.Context, itemName string, username string) error {
 	const op = "service.ItemService.BuyItem"
 
