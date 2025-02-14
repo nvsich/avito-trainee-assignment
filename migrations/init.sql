@@ -40,15 +40,6 @@ create table employee_inventory
     foreign key (item_id) references items (id)
 );
 
--- TODO: подумать надо ли это
--- create table purchases
--- (
---     id          uuid primary key,
---     employee_id uuid      not null,
---     product_id  uuid      not null,
---     date        timestamp not null
--- );
-
 create table transfers
 (
     id            uuid primary key,
