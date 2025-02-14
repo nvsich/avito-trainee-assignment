@@ -66,7 +66,7 @@ func (s *ItemService) Buy(ctx context.Context, itemName string, login string) er
 		employeeInventory, err := s.inventoryRepo.FindByEmployeeAndItem(ctx, employee.Id, item.Id)
 
 		if err != nil {
-			if errors.Is(err, repo.ErrInventoryNotFound) {
+			if errors.Is(err, repo.ErrEmployeeInventoryNotFound) {
 				if err = s.inventoryRepo.Save(ctx, &model.EmployeeInventory{
 					Id:         uuid.New(),
 					EmployeeId: employee.Id,

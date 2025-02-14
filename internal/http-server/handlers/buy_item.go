@@ -63,7 +63,7 @@ func NewBuyItemHandlerFunc(log *slog.Logger, buyItemService BuyItem) http.Handle
 			if errors.Is(err, service.ErrNotEnoughCoins) {
 				log.Info("failed to buy item", sl.Err(err))
 
-				render.Status(r, http.StatusBadGateway)
+				render.Status(r, http.StatusBadRequest)
 				render.JSON(w, r, resp.ErrorResponse{Errors: "not enough coins"})
 				return
 			}

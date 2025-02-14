@@ -49,6 +49,7 @@ func NewInfoHandlerFunc(log *slog.Logger, infoService Info) http.HandlerFunc {
 				return
 			}
 
+			log.Error("failed to get employee info", sl.Err(err))
 			render.Status(r, http.StatusInternalServerError)
 			render.JSON(w, r, resp.ErrorResponse{Errors: "internal server error"})
 			return

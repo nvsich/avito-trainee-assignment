@@ -48,7 +48,7 @@ func (r *PgInventoryRepo) FindAllInventoryItemsByEmployee(
 	const op = "repo.pgdb.PGInventoryRepo.FindAllInventoryItemsByEmployee"
 
 	query, args, err := r.Builder.
-		Select("items.name, sum(employee_inventory.amount as amount").
+		Select("items.name, sum(employee_inventory.amount) as amount").
 		From("employee_inventory").
 		LeftJoin("items on items.id = employee_inventory.item_id").
 		GroupBy("items.name").
@@ -101,10 +101,10 @@ func (r *PgInventoryRepo) FindByEmployeeAndItem(
 
 	var inventory model.EmployeeInventory
 	err = conn.QueryRow(ctx, query, args...).Scan(
-		inventory.Id,
-		inventory.EmployeeId,
-		inventory.ItemId,
-		inventory.Amount,
+		&inventory.Id,
+		&inventory.EmployeeId,
+		&inventory.ItemId,
+		&inventory.Amount,
 	)
 
 	if err != nil {
