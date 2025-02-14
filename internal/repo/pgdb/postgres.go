@@ -9,8 +9,6 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-// TODO: remake with concrete implementation
-
 type PgxPool interface {
 	Close()
 	Acquire(ctx context.Context) (*pgxpool.Conn, error)
