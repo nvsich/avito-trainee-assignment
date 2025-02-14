@@ -34,9 +34,6 @@ func NewAuthService(employeeRepo EmployeeRepo, signKey string, tokenTTL time.Dur
 	}
 }
 
-// TODO: подумать насчет хранения []byte(passwordHash) в БД
-// TODO: hash password in handler?
-
 func (s *AuthService) Authorize(ctx context.Context, username string, password string) (string, error) {
 	const op = "service.AuthService.Authenticate"
 
@@ -76,7 +73,6 @@ func (s *AuthService) Authorize(ctx context.Context, username string, password s
 		return "", ErrInvalidCredentials
 	}
 
-	// TODO: не создавать новый токен а проверять старый?
 	return s.generateJWT(employee.Id, employee.Username)
 }
 
