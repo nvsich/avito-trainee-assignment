@@ -22,7 +22,7 @@ func newServiceProvider(cfg *config.Config, pg *pgdb.Postgres, trManager *manage
 	pgInventoryRepo := pgdb.NewPgInventoryRepo(pg, trmpgx.DefaultCtxGetter)
 
 	return &serviceProvider{
-		AuthService:     service.NewAuthService(pgEmployeeRepo, cfg.JWT.SignKey, cfg.JWT.TokenTTL),
+		AuthService:     service.NewAuthService(trManager, pgEmployeeRepo, cfg.JWT.SignKey, cfg.JWT.TokenTTL),
 		TransferService: service.NewTransferService(trManager, pgEmployeeRepo, pgTransferRepo),
 		BuyItemService:  service.NewItemService(trManager, pgItemRepo, pgEmployeeRepo, pgInventoryRepo),
 		InfoService:     service.NewInfoService(trManager, pgEmployeeRepo, pgInventoryRepo, pgTransferRepo, pgItemRepo),
