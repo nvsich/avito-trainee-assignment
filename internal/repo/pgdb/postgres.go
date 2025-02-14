@@ -24,13 +24,12 @@ type PgxPool interface {
 	Ping(ctx context.Context) error
 }
 
-// TODO: add poolsize, conntimeout etc
 type Postgres struct {
 	Builder squirrel.StatementBuilderType
 	Pool    PgxPool
 }
 
-func New(dsn string) (*Postgres, error) {
+func New(dsn string, maxPoolSize int) (*Postgres, error) {
 	const op = "repo.pgdb.New"
 	p := &Postgres{}
 	p.Builder = squirrel.StatementBuilder.PlaceholderFormat(squirrel.Dollar)
@@ -39,6 +38,8 @@ func New(dsn string) (*Postgres, error) {
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
+
+	poolConfig.MaxConns = int32(maxPoolSize)
 
 	p.Pool, err = pgxpool.NewWithConfig(context.Background(), poolConfig)
 	if err != nil {

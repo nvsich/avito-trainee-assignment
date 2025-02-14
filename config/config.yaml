@@ -13,3 +13,4 @@ jwt:
 
 pg:
   url: "postgres://postgres:password@db:5432/shop"
+  maxPoolSize: 20

@@ -33,7 +33,8 @@ type Log struct {
 }
 
 type PG struct {
-	URL string `env-required:"true" yaml:"url" env:"PG_URL"`
+	URL         string `env-required:"true" yaml:"url" env:"PG_URL"`
+	MaxPoolSize int    `env-required:"true" yaml:"maxPoolSize" env:"PG_MAX_POOL_SIZE"`
 }
 
 func MustLoad(configPath string) *Config {

@@ -24,7 +24,7 @@ func Run(configPath string) {
 
 	log := mustSetupLogger(cfg.Log.Level)
 
-	pg, err := pgdb.New(cfg.PG.URL)
+	pg, err := pgdb.New(cfg.PG.URL, cfg.MaxPoolSize)
 	if err != nil {
 		log.Error("failed to connect to database", sl.Err(err))
 		os.Exit(1)
@@ -57,7 +57,7 @@ func Run(configPath string) {
 	log.Info("starting server", slog.String("port", cfg.HTTP.Port))
 
 	server := &http.Server{
-		Addr:         ":" + cfg.HTTP.Port, // TODO: add addr to config
+		Addr:         ":" + cfg.HTTP.Port,
 		Handler:      router,
 		ReadTimeout:  cfg.HTTP.ReadTimeout,
 		WriteTimeout: cfg.HTTP.WriteTimeout,
