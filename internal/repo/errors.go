@@ -8,4 +8,6 @@ var (
 
 	ErrItemNotFound              = errors.New("item not found")
 	ErrEmployeeInventoryNotFound = errors.New("employee inventory not found")
+
+	ErrInventoryNotFound = errors.New("inventory not found")
 )

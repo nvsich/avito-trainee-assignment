@@ -7,6 +7,7 @@ import (
 	"avito-shop/internal/service"
 	"context"
 	"errors"
+	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/render"
 	"log/slog"
@@ -28,7 +29,7 @@ func NewBuyItemHandlerFunc(log *slog.Logger, buyItemService BuyItem) http.Handle
 			slog.String("request_id", middleware.GetReqID(r.Context())),
 		)
 
-		itemName := r.URL.Query().Get(item)
+		itemName := chi.URLParam(r, item)
 
 		if itemName == "" {
 			log.Error("empty item name")
