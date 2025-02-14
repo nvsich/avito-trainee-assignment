@@ -30,6 +30,10 @@ func NewTransferService(
 func (s *TransferService) SendCoins(ctx context.Context, fromLogin string, toLogin string, amount int) error {
 	const op = "service.TransferService.SendCoins"
 
+	if fromLogin == toLogin {
+		return ErrTransferToSameEmployee
+	}
+
 	// TODO: decompose and think about needing transactions
 	// TODO: think about correctness of error handling here
 	err := s.trManager.Do(ctx, func(ctx context.Context) error {

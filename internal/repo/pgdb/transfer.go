@@ -88,7 +88,7 @@ func (r *PGTransferRepo) FindAllForSenderGroupedByReceivers(
 	query, args, err := r.Builder.
 		Select("e.login as user, sum(t.amount) as amount").
 		From("transfers t").
-		Join("employees e on t.from_employee = e.id").
+		Join("employees e on t.to_employee = e.id").
 		Where("t.from_employee = ?", senderId).
 		GroupBy("e.login").
 		ToSql()
