@@ -17,7 +17,7 @@ import (
 const item = "item"
 
 type BuyItem interface {
-	Buy(ctx context.Context, itemName string, login string) error
+	Buy(ctx context.Context, itemName string, username string) error
 }
 
 func NewBuyItemHandlerFunc(log *slog.Logger, buyItemService BuyItem) http.HandlerFunc {
@@ -49,7 +49,7 @@ func NewBuyItemHandlerFunc(log *slog.Logger, buyItemService BuyItem) http.Handle
 			return
 		}
 
-		err := buyItemService.Buy(r.Context(), itemName, claims.Login)
+		err := buyItemService.Buy(r.Context(), itemName, claims.Username)
 
 		if err != nil {
 			if errors.Is(err, service.ErrEmployeeNotFound) {

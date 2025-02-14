@@ -15,7 +15,7 @@ import (
 )
 
 type Auth interface {
-	Authorize(ctx context.Context, login string, password string) (string, error)
+	Authorize(ctx context.Context, username string, password string) (string, error)
 }
 
 func NewAuthHandlerFunc(log *slog.Logger, authService Auth) http.HandlerFunc {

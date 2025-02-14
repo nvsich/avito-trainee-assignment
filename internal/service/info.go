@@ -33,12 +33,12 @@ func NewInfoService(
 	}
 }
 
-func (s *InfoService) Get(ctx context.Context, login string) (*model.EmployeeInfo, error) {
+func (s *InfoService) Get(ctx context.Context, username string) (*model.EmployeeInfo, error) {
 	const op = "service.InfoService.Get"
 	var employeeInfo model.EmployeeInfo
 
 	err := s.trManager.Do(ctx, func(ctx context.Context) error {
-		employee, err := s.employeeRepo.FindByLogin(ctx, login)
+		employee, err := s.employeeRepo.FindByUsername(ctx, username)
 		if err != nil {
 			if errors.Is(err, repo.ErrEmployeeNotFound) {
 				return ErrEmployeeNotFound

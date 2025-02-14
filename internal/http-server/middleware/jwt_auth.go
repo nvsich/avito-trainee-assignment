@@ -69,7 +69,7 @@ func NewJwtAuth(log *slog.Logger, signKey string) func(next http.Handler) http.H
 			}
 
 			log.Info("successful authentication",
-				slog.String("user_id", claims.Login),
+				slog.String("user_id", claims.Username),
 				slog.String(requestIdKey, requestId),
 			)
 

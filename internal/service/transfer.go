@@ -27,17 +27,17 @@ func NewTransferService(
 		transferRepo: transferRepo,
 	}
 }
-func (s *TransferService) SendCoins(ctx context.Context, fromLogin string, toLogin string, amount int) error {
+func (s *TransferService) SendCoins(ctx context.Context, fromUsername string, toUsername string, amount int) error {
 	const op = "service.TransferService.SendCoins"
 
-	if fromLogin == toLogin {
+	if fromUsername == toUsername {
 		return ErrTransferToSameEmployee
 	}
 
 	// TODO: decompose and think about needing transactions
 	// TODO: think about correctness of error handling here
 	err := s.trManager.Do(ctx, func(ctx context.Context) error {
-		fromEmployee, err := s.employeeRepo.FindByLogin(ctx, fromLogin)
+		fromEmployee, err := s.employeeRepo.FindByUsername(ctx, fromUsername)
 		if err != nil {
 			if errors.Is(err, repo.ErrEmployeeNotFound) {
 				return ErrSenderNotFound
@@ -53,7 +53,7 @@ func (s *TransferService) SendCoins(ctx context.Context, fromLogin string, toLog
 			return ErrNotEnoughCoins
 		}
 
-		toEmployee, err := s.employeeRepo.FindByLogin(ctx, toLogin)
+		toEmployee, err := s.employeeRepo.FindByUsername(ctx, toUsername)
 		if err != nil {
 			if errors.Is(err, repo.ErrEmployeeNotFound) {
 				return ErrReceiverNotFound
@@ -64,11 +64,11 @@ func (s *TransferService) SendCoins(ctx context.Context, fromLogin string, toLog
 		fromEmployee.Balance = fromEmployee.Balance - amount
 		toEmployee.Balance = toEmployee.Balance + amount
 
-		err = s.employeeRepo.UpdateByLogin(ctx, fromLogin, fromEmployee)
+		err = s.employeeRepo.UpdateByUsername(ctx, fromUsername, fromEmployee)
 		if err != nil {
 			return fmt.Errorf("%s: %w", op, err)
 		}
-		err = s.employeeRepo.UpdateByLogin(ctx, toLogin, toEmployee)
+		err = s.employeeRepo.UpdateByUsername(ctx, toUsername, toEmployee)
 		if err != nil {
 			return fmt.Errorf("%s: %w", op, err)
 		}

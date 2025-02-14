@@ -1,6 +1,6 @@
 package request
 
-// TODO: change Login everywhere for Username (including db)
+// TODO: change Username everywhere for Username (including db)
 
 type AuthRequest struct {
 	Username string `json:"username" validate:"required"`

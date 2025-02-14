@@ -4,7 +4,7 @@ import "github.com/google/uuid"
 
 type Employee struct {
 	Id           uuid.UUID
-	Login        string
+	Username     string
 	Balance      int
 	PasswordHash string
 }

@@ -24,7 +24,7 @@ values ('4ba3ad9c-07e2-45d5-9c3f-5c3ffcf2f6a5', 't-shirt', 80),
 create table employees
 (
     id            uuid primary key,
-    login         text not null unique,
+    username      text not null unique,
     password_hash text not null,
     balance       int  not null
 );

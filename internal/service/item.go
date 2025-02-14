@@ -33,11 +33,11 @@ func NewItemService(
 
 // TODO: what if we need rollback?
 
-func (s *ItemService) Buy(ctx context.Context, itemName string, login string) error {
+func (s *ItemService) Buy(ctx context.Context, itemName string, username string) error {
 	const op = "service.ItemService.BuyItem"
 
 	err := s.trManager.Do(ctx, func(ctx context.Context) error {
-		employee, err := s.employeeRepo.FindByLogin(ctx, login)
+		employee, err := s.employeeRepo.FindByUsername(ctx, username)
 		if err != nil {
 			if errors.Is(err, repo.ErrEmployeeNotFound) {
 				return ErrEmployeeNotFound
@@ -59,7 +59,7 @@ func (s *ItemService) Buy(ctx context.Context, itemName string, login string) er
 
 		employee.Balance = employee.Balance - item.Price
 
-		if err = s.employeeRepo.UpdateByLogin(ctx, employee.Login, employee); err != nil {
+		if err = s.employeeRepo.UpdateByUsername(ctx, employee.Username, employee); err != nil {
 			return fmt.Errorf("%s: %w", op, err)
 		}
 

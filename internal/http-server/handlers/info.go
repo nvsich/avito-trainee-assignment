@@ -16,7 +16,7 @@ import (
 )
 
 type Info interface {
-	Get(ctx context.Context, login string) (*model.EmployeeInfo, error)
+	Get(ctx context.Context, username string) (*model.EmployeeInfo, error)
 }
 
 func NewInfoHandlerFunc(log *slog.Logger, infoService Info) http.HandlerFunc {
@@ -37,7 +37,7 @@ func NewInfoHandlerFunc(log *slog.Logger, infoService Info) http.HandlerFunc {
 			return
 		}
 
-		employeeInfo, err := infoService.Get(r.Context(), claims.Login)
+		employeeInfo, err := infoService.Get(r.Context(), claims.Username)
 
 		if err != nil {
 			if errors.Is(err, service.ErrEmployeeNotFound) {

@@ -61,7 +61,7 @@ func NewSendCoinsHandlerFunc(log *slog.Logger, transferService Transfer) http.Ha
 			return
 		}
 
-		err = transferService.SendCoins(r.Context(), claims.Login, request.ToUser, request.Amount)
+		err = transferService.SendCoins(r.Context(), claims.Username, request.ToUser, request.Amount)
 		if err != nil {
 			if errors.Is(err, service.ErrTransferToSameEmployee) {
 				log.Info("failed to send coins", sl.Err(err))

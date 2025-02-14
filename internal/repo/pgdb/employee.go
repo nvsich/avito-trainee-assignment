@@ -24,8 +24,8 @@ func (r *PGEmployeeRepo) Save(ctx context.Context, employee *model.Employee) err
 
 	query, args, err := r.Builder.
 		Insert("employees").
-		Columns("id, login, password_hash, balance").
-		Values(employee.Id, employee.Login, employee.PasswordHash, employee.Balance).
+		Columns("id, username, password_hash, balance").
+		Values(employee.Id, employee.Username, employee.PasswordHash, employee.Balance).
 		ToSql()
 
 	if err != nil {
@@ -42,13 +42,13 @@ func (r *PGEmployeeRepo) Save(ctx context.Context, employee *model.Employee) err
 	return nil
 }
 
-func (r *PGEmployeeRepo) FindByLogin(ctx context.Context, login string) (*model.Employee, error) {
-	const op = "repo.pgdb.PGEmployeeRepo.FindByLogin"
+func (r *PGEmployeeRepo) FindByUsername(ctx context.Context, username string) (*model.Employee, error) {
+	const op = "repo.pgdb.PGEmployeeRepo.FindByUsername"
 
 	query, args, err := r.Builder.
-		Select("id, login, password_hash, balance").
+		Select("id, username, password_hash, balance").
 		From("employees").
-		Where("login = ?", login).
+		Where("username = ?", username).
 		ToSql()
 
 	if err != nil {
@@ -61,7 +61,7 @@ func (r *PGEmployeeRepo) FindByLogin(ctx context.Context, login string) (*model.
 	err = conn.QueryRow(ctx, query, args...).
 		Scan(
 			&employee.Id,
-			&employee.Login,
+			&employee.Username,
 			&employee.PasswordHash,
 			&employee.Balance,
 		)
@@ -76,14 +76,14 @@ func (r *PGEmployeeRepo) FindByLogin(ctx context.Context, login string) (*model.
 	return &employee, nil
 }
 
-func (r *PGEmployeeRepo) UpdateByLogin(ctx context.Context, login string, employee *model.Employee) error {
-	const op = "repo.pgdb.PGEmployeeRepo.UpdateByLogin"
+func (r *PGEmployeeRepo) UpdateByUsername(ctx context.Context, username string, employee *model.Employee) error {
+	const op = "repo.pgdb.PGEmployeeRepo.UpdateByUsername"
 
 	query, args, err := r.Builder.
 		Update("employees").
 		Set("password_hash", employee.PasswordHash).
 		Set("balance", employee.Balance).
-		Where("login = ?", login).
+		Where("username = ?", username).
 		ToSql()
 
 	if err != nil {

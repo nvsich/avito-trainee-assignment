@@ -45,11 +45,11 @@ func (r *PGTransferRepo) FindAllForReceiverGroupedBySenders(
 	const op = "repo.PGTransferRepo.FindAllForReceiverGroupedBySenders"
 
 	query, args, err := r.Builder.
-		Select("e.login as user, sum(t.amount) as amount").
+		Select("e.username as user, sum(t.amount) as amount").
 		From("transfers t").
 		Join("employees e on t.from_employee = e.id").
 		Where("t.to_employee = ?", receiverId).
-		GroupBy("e.login").
+		GroupBy("e.username").
 		ToSql()
 
 	if err != nil {
@@ -86,11 +86,11 @@ func (r *PGTransferRepo) FindAllForSenderGroupedByReceivers(
 	const op = "repo.PGTransferRepo.FindAllForReceiverGroupedBySenders"
 
 	query, args, err := r.Builder.
-		Select("e.login as user, sum(t.amount) as amount").
+		Select("e.username as user, sum(t.amount) as amount").
 		From("transfers t").
 		Join("employees e on t.to_employee = e.id").
 		Where("t.from_employee = ?", senderId).
-		GroupBy("e.login").
+		GroupBy("e.username").
 		ToSql()
 
 	if err != nil {

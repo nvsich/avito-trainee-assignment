@@ -8,8 +8,8 @@ import (
 
 type EmployeeRepo interface {
 	Save(ctx context.Context, employee *model.Employee) error
-	FindByLogin(ctx context.Context, login string) (*model.Employee, error)
-	UpdateByLogin(ctx context.Context, login string, employee *model.Employee) error
+	FindByUsername(ctx context.Context, username string) (*model.Employee, error)
+	UpdateByUsername(ctx context.Context, username string, employee *model.Employee) error
 }
 
 type TransferRepo interface {

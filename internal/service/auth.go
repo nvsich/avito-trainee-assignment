@@ -17,7 +17,7 @@ const newEmployeeInitialBalance = 1000
 type TokenClaims struct {
 	jwt.StandardClaims
 	EmployeeId uuid.UUID
-	Login      string
+	Username   string
 }
 
 type AuthService struct {
@@ -37,10 +37,10 @@ func NewAuthService(employeeRepo EmployeeRepo, signKey string, tokenTTL time.Dur
 // TODO: подумать насчет хранения []byte(passwordHash) в БД
 // TODO: hash password in handler?
 
-func (s *AuthService) Authorize(ctx context.Context, login string, password string) (string, error) {
+func (s *AuthService) Authorize(ctx context.Context, username string, password string) (string, error) {
 	const op = "service.AuthService.Authenticate"
 
-	employee, err := s.employeeRepo.FindByLogin(ctx, login)
+	employee, err := s.employeeRepo.FindByUsername(ctx, username)
 
 	if err != nil {
 		if errors.Is(err, repo.ErrEmployeeNotFound) {
@@ -51,7 +51,7 @@ func (s *AuthService) Authorize(ctx context.Context, login string, password stri
 
 			newEmployee := &model.Employee{
 				Id:           uuid.New(),
-				Login:        login,
+				Username:     username,
 				PasswordHash: string(hashedPassword),
 				Balance:      newEmployeeInitialBalance,
 			}
@@ -62,7 +62,7 @@ func (s *AuthService) Authorize(ctx context.Context, login string, password stri
 				return "", fmt.Errorf("%s: %w", op, err)
 			}
 
-			token, err := s.generateJWT(newEmployee.Id, newEmployee.Login)
+			token, err := s.generateJWT(newEmployee.Id, newEmployee.Username)
 			if err != nil {
 				return "", fmt.Errorf("%s: %w", op, err)
 			}
@@ -77,13 +77,13 @@ func (s *AuthService) Authorize(ctx context.Context, login string, password stri
 	}
 
 	// TODO: не создавать новый токен а проверять старый?
-	return s.generateJWT(employee.Id, employee.Login)
+	return s.generateJWT(employee.Id, employee.Username)
 }
 
-func (s *AuthService) generateJWT(id uuid.UUID, login string) (string, error) {
+func (s *AuthService) generateJWT(id uuid.UUID, username string) (string, error) {
 	expirationTime := time.Now().Add(s.tokenTTL)
 	claims := &TokenClaims{
-		Login:      login,
+		Username:   username,
 		EmployeeId: id,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: expirationTime.Unix(),
