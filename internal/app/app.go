@@ -15,7 +15,6 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
-	"time"
 )
 
 // TODO: decompose for several steps
@@ -60,9 +59,9 @@ func Run(configPath string) {
 	server := &http.Server{
 		Addr:         ":" + cfg.HTTP.Port, // TODO: add addr to config
 		Handler:      router,
-		ReadTimeout:  5 * time.Second,   // TODO: add to config
-		WriteTimeout: 10 * time.Second,  // TODO: add to config
-		IdleTimeout:  120 * time.Second, // TODO: add to config
+		ReadTimeout:  cfg.HTTP.ReadTimeout,
+		WriteTimeout: cfg.HTTP.WriteTimeout,
+		IdleTimeout:  cfg.HTTP.IdleTimeout,
 	}
 
 	log.Info("server started", slog.String("address", server.Addr))

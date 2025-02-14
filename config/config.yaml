@@ -1,5 +1,8 @@
 http:
   port: 8080
+  readTimeout: 5s
+  writeTimeout: 10s
+  idleTimeout: 120s
 
 log:
   level: 'debug'

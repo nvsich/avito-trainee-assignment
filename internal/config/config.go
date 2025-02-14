@@ -17,7 +17,10 @@ type Config struct {
 }
 
 type HTTP struct {
-	Port string `env-required:"true" yaml:"port" env:"HTTP_PORT"`
+	Port         string        `env-required:"true" yaml:"port" env:"HTTP_PORT"`
+	ReadTimeout  time.Duration `env-required:"true" yaml:"readTimeout" env:"HTTP_READ_TIMEOUT"`
+	WriteTimeout time.Duration `env-required:"true" yaml:"writeTimeout" env:"HTTP_WRITE_TIMEOUT"`
+	IdleTimeout  time.Duration `env-required:"true" yaml:"idleTimeout" env:"HTTP_IDLE_TIMEOUT"`
 }
 
 type JWT struct {
