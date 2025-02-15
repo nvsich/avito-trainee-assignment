@@ -8,6 +8,7 @@ import (
 	"fmt"
 	trmpgx "github.com/avito-tech/go-transaction-manager/drivers/pgxv5/v2"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 )
 
 type PGEmployeeRepo struct {
@@ -36,6 +37,12 @@ func (r *PGEmployeeRepo) Save(ctx context.Context, employee *model.Employee) err
 
 	_, err = conn.Exec(ctx, query, args...)
 	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			if pgErr.Code == "23505" {
+				return repo.ErrEmployeeExists
+			}
+		}
 		return fmt.Errorf("%s: %w", op, err)
 	}
 
