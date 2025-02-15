@@ -6,19 +6,18 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/avito-tech/go-transaction-manager/trm/v2/manager"
 	"github.com/google/uuid"
 )
 
 type ItemService struct {
-	trManager     *manager.Manager
+	trManager     TransactionManager
 	itemRepo      ItemRepo
 	employeeRepo  EmployeeRepo
 	inventoryRepo InventoryRepo
 }
 
 func NewItemService(
-	trManager *manager.Manager,
+	trManager TransactionManager,
 	itemRepo ItemRepo,
 	employeeRepo EmployeeRepo,
 	inventoryRepo InventoryRepo,

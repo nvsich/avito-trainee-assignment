@@ -6,7 +6,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/avito-tech/go-transaction-manager/trm/v2/manager"
 	"github.com/golang-jwt/jwt"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
@@ -25,11 +24,11 @@ type AuthService struct {
 	employeeRepo EmployeeRepo
 	signKey      string
 	tokenTTL     time.Duration
-	trManager    *manager.Manager
+	trManager    TransactionManager
 }
 
 func NewAuthService(
-	trManager *manager.Manager, employeeRepo EmployeeRepo, signKey string, tokenTTL time.Duration) *AuthService {
+	trManager TransactionManager, employeeRepo EmployeeRepo, signKey string, tokenTTL time.Duration) *AuthService {
 	return &AuthService{
 		employeeRepo: employeeRepo,
 		signKey:      signKey,

@@ -6,11 +6,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/avito-tech/go-transaction-manager/trm/v2/manager"
 )
 
 type InfoService struct {
-	trManager     *manager.Manager
+	trManager     TransactionManager
 	employeeRepo  EmployeeRepo
 	inventoryRepo InventoryRepo
 	transferRepo  TransferRepo
@@ -18,7 +17,7 @@ type InfoService struct {
 }
 
 func NewInfoService(
-	trManager *manager.Manager,
+	trManager TransactionManager,
 	employeeRepo EmployeeRepo,
 	inventoryRepo InventoryRepo,
 	transferRepo TransferRepo,

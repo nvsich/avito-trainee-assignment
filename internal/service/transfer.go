@@ -6,18 +6,17 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/avito-tech/go-transaction-manager/trm/v2/manager"
 	"github.com/google/uuid"
 )
 
 type TransferService struct {
-	trManager    *manager.Manager
+	trManager    TransactionManager
 	employeeRepo EmployeeRepo
 	transferRepo TransferRepo
 }
 
 func NewTransferService(
-	trManager *manager.Manager,
+	trManager TransactionManager,
 	employeeRepo EmployeeRepo,
 	transferRepo TransferRepo,
 ) *TransferService {

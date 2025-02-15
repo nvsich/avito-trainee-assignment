@@ -29,3 +29,7 @@ type InventoryRepo interface {
 	FindByEmployeeAndItem(ctx context.Context, employeeId uuid.UUID, itemId uuid.UUID) (*model.EmployeeInventory, error)
 	UpdateById(ctx context.Context, id uuid.UUID, employeeInventory *model.EmployeeInventory) error
 }
+
+type TransactionManager interface {
+	Do(ctx context.Context, fn func(context.Context) error) error
+}
