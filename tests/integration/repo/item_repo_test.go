@@ -14,9 +14,20 @@ import (
 
 type PGItemRepoTestSuite struct {
 	PGDBTestSuite
+	ctx      context.Context
+	itemRepo *pgdb.PGItemRepo
 }
 
 func (s *PGItemRepoTestSuite) SetupTest() {
+	s.ctx = context.Background()
+	s.itemRepo = pgdb.NewPGItemRepo(
+		&pgdb.Postgres{
+			Pool:    s.pool,
+			Builder: squirrel.StatementBuilder.PlaceholderFormat(squirrel.Dollar),
+		},
+		trmpgx.DefaultCtxGetter,
+	)
+
 	_, err := s.pool.Exec(context.Background(), "truncate table items restart identity cascade;")
 	s.Require().NoError(err)
 }
@@ -26,28 +37,19 @@ func TestPGItemRepo(t *testing.T) {
 }
 
 func (s *PGItemRepoTestSuite) TestFindByName() {
-	ctx := context.Background()
-	itemRepo := pgdb.NewPGItemRepo(
-		&pgdb.Postgres{
-			Pool:    s.pool,
-			Builder: squirrel.StatementBuilder.PlaceholderFormat(squirrel.Dollar),
-		},
-		trmpgx.DefaultCtxGetter,
-	)
-
 	testItem := model.Item{
 		Id:    uuid.New(),
 		Name:  "tests item",
 		Price: 100,
 	}
 
-	_, err := s.pool.Exec(ctx,
+	_, err := s.pool.Exec(s.ctx,
 		"insert into items(id, name, price) values ($1, $2, $3)",
 		testItem.Id, testItem.Name, testItem.Price)
 	s.Require().NoError(err)
 
 	s.Run("should find item by name", func() {
-		item, err := itemRepo.FindByName(ctx, testItem.Name)
+		item, err := s.itemRepo.FindByName(s.ctx, testItem.Name)
 		s.Require().NoError(err)
 		s.Require().NotNil(item)
 		s.Require().Equal(testItem.Id, item.Id)
@@ -56,35 +58,26 @@ func (s *PGItemRepoTestSuite) TestFindByName() {
 	})
 
 	s.Run("should not find item by name", func() {
-		item, err := itemRepo.FindByName(ctx, "non existing item")
+		item, err := s.itemRepo.FindByName(s.ctx, "non existing item")
 		s.Require().ErrorIs(err, repo.ErrItemNotFound)
 		s.Require().Nil(item)
 	})
 }
 
 func (s *PGItemRepoTestSuite) TestPGItemRepo_FindById() {
-	ctx := context.Background()
-	itemRepo := pgdb.NewPGItemRepo(
-		&pgdb.Postgres{
-			Pool:    s.pool,
-			Builder: squirrel.StatementBuilder.PlaceholderFormat(squirrel.Dollar),
-		},
-		trmpgx.DefaultCtxGetter,
-	)
-
 	testItem := model.Item{
 		Id:    uuid.New(),
 		Name:  "tests item",
 		Price: 100,
 	}
 
-	_, err := s.pool.Exec(ctx,
+	_, err := s.pool.Exec(s.ctx,
 		"insert into items(id, name, price) values ($1, $2, $3)",
 		testItem.Id, testItem.Name, testItem.Price)
 	s.Require().NoError(err)
 
 	s.Run("should find item by id", func() {
-		item, err := itemRepo.FindById(ctx, testItem.Id)
+		item, err := s.itemRepo.FindById(s.ctx, testItem.Id)
 		s.Require().NoError(err)
 		s.Require().NotNil(item)
 		s.Require().Equal(testItem.Id, item.Id)
@@ -94,7 +87,7 @@ func (s *PGItemRepoTestSuite) TestPGItemRepo_FindById() {
 
 	s.Run("should not find item by id", func() {
 		nonExistingId := uuid.New()
-		item, err := itemRepo.FindById(ctx, nonExistingId)
+		item, err := s.itemRepo.FindById(s.ctx, nonExistingId)
 		s.Require().ErrorIs(err, repo.ErrItemNotFound)
 		s.Require().Nil(item)
 	})
