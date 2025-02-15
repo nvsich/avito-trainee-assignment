@@ -14,9 +14,20 @@ import (
 
 type PGEmployeeRepoTestSuite struct {
 	PGDBTestSuite
+	ctx          context.Context
+	employeeRepo *pgdb.PGEmployeeRepo
 }
 
 func (s *PGEmployeeRepoTestSuite) SetupTest() {
+	s.ctx = context.Background()
+	s.employeeRepo = pgdb.NewPGEmployeeRepo(
+		&pgdb.Postgres{
+			Pool:    s.pool,
+			Builder: squirrel.StatementBuilder.PlaceholderFormat(squirrel.Dollar),
+		},
+		trmpgx.DefaultCtxGetter,
+	)
+
 	_, err := s.pool.Exec(context.Background(), "truncate table employees restart identity cascade")
 	s.Require().NoError(err)
 }
@@ -26,15 +37,6 @@ func TestPGEmployeeRepo(t *testing.T) {
 }
 
 func (s *PGEmployeeRepoTestSuite) TestSave() {
-	ctx := context.Background()
-	employeeRepo := pgdb.NewPGEmployeeRepo(
-		&pgdb.Postgres{
-			Pool:    s.pool,
-			Builder: squirrel.StatementBuilder.PlaceholderFormat(squirrel.Dollar),
-		},
-		trmpgx.DefaultCtxGetter,
-	)
-
 	testEmployee := model.Employee{
 		Id:           uuid.New(),
 		Username:     "test username",
@@ -43,11 +45,11 @@ func (s *PGEmployeeRepoTestSuite) TestSave() {
 	}
 
 	s.Run("should save employee", func() {
-		err := employeeRepo.Save(ctx, &testEmployee)
+		err := s.employeeRepo.Save(s.ctx, &testEmployee)
 		s.Require().NoError(err)
 
 		var savedEmployee model.Employee
-		err = s.pool.QueryRow(ctx, "select id, username, password_hash, balance from employees where id = $1", testEmployee.Id).
+		err = s.pool.QueryRow(s.ctx, "select id, username, password_hash, balance from employees where id = $1", testEmployee.Id).
 			Scan(&savedEmployee.Id, &savedEmployee.Username, &savedEmployee.PasswordHash, &savedEmployee.Balance)
 		s.Require().NoError(err)
 
@@ -65,21 +67,12 @@ func (s *PGEmployeeRepoTestSuite) TestSave() {
 			Balance:      50,
 		}
 
-		err := employeeRepo.Save(ctx, &duplicateEmployee)
+		err := s.employeeRepo.Save(s.ctx, &duplicateEmployee)
 		s.Require().ErrorIs(err, repo.ErrEmployeeExists)
 	})
 }
 
 func (s *PGEmployeeRepoTestSuite) TestFindByUsername() {
-	ctx := context.Background()
-	employeeRepo := pgdb.NewPGEmployeeRepo(
-		&pgdb.Postgres{
-			Pool:    s.pool,
-			Builder: squirrel.StatementBuilder.PlaceholderFormat(squirrel.Dollar),
-		},
-		trmpgx.DefaultCtxGetter,
-	)
-
 	testEmployee := model.Employee{
 		Id:           uuid.New(),
 		Username:     "test username",
@@ -87,13 +80,13 @@ func (s *PGEmployeeRepoTestSuite) TestFindByUsername() {
 		Balance:      1,
 	}
 
-	_, err := s.pool.Exec(ctx,
+	_, err := s.pool.Exec(s.ctx,
 		"insert into employees(id, username, password_hash, balance) values ($1, $2, $3, $4)",
 		testEmployee.Id, testEmployee.Username, testEmployee.PasswordHash, testEmployee.Balance)
 	s.Require().NoError(err)
 
 	s.Run("should find employee by username", func() {
-		employee, err := employeeRepo.FindByUsername(ctx, testEmployee.Username)
+		employee, err := s.employeeRepo.FindByUsername(s.ctx, testEmployee.Username)
 		s.Require().NoError(err)
 		s.Require().NotNil(employee)
 		s.Require().Equal(testEmployee.Id, employee.Id)
@@ -103,22 +96,13 @@ func (s *PGEmployeeRepoTestSuite) TestFindByUsername() {
 	})
 
 	s.Run("should not find employee by username", func() {
-		employee, err := employeeRepo.FindByUsername(ctx, "non existing username")
+		employee, err := s.employeeRepo.FindByUsername(s.ctx, "non existing username")
 		s.Require().ErrorIs(err, repo.ErrEmployeeNotFound)
 		s.Require().Nil(employee)
 	})
 }
 
 func (s *PGEmployeeRepoTestSuite) TestUpdateByUsername() {
-	ctx := context.Background()
-	employeeRepo := pgdb.NewPGEmployeeRepo(
-		&pgdb.Postgres{
-			Pool:    s.pool,
-			Builder: squirrel.StatementBuilder.PlaceholderFormat(squirrel.Dollar),
-		},
-		trmpgx.DefaultCtxGetter,
-	)
-
 	testEmployee := model.Employee{
 		Id:           uuid.New(),
 		Username:     "test username",
@@ -126,7 +110,7 @@ func (s *PGEmployeeRepoTestSuite) TestUpdateByUsername() {
 		Balance:      1,
 	}
 
-	_, err := s.pool.Exec(ctx,
+	_, err := s.pool.Exec(s.ctx,
 		"insert into employees(id, username, password_hash, balance) values ($1, $2, $3, $4)",
 		testEmployee.Id, testEmployee.Username, testEmployee.PasswordHash, testEmployee.Balance)
 	s.Require().NoError(err)
@@ -141,11 +125,11 @@ func (s *PGEmployeeRepoTestSuite) TestUpdateByUsername() {
 			Balance:      newBalance,
 		}
 
-		err = employeeRepo.UpdateByUsername(ctx, testEmployee.Username, updatedEmployee)
+		err = s.employeeRepo.UpdateByUsername(s.ctx, testEmployee.Username, updatedEmployee)
 		s.Require().NoError(err)
 
 		var savedEmployee model.Employee
-		err = s.pool.QueryRow(ctx, "select id, username, password_hash, balance from employees where id = $1", testEmployee.Id).
+		err = s.pool.QueryRow(s.ctx, "select id, username, password_hash, balance from employees where id = $1", testEmployee.Id).
 			Scan(&savedEmployee.Id, &savedEmployee.Username, &savedEmployee.PasswordHash, &savedEmployee.Balance)
 		s.Require().NoError(err)
 
@@ -165,7 +149,7 @@ func (s *PGEmployeeRepoTestSuite) TestUpdateByUsername() {
 			Balance:      newBalance,
 		}
 
-		err = employeeRepo.UpdateByUsername(ctx, "non existing id", updatedEmployee)
+		err = s.employeeRepo.UpdateByUsername(s.ctx, "non existing id", updatedEmployee)
 		s.Require().NoError(err)
 	})
 }
