@@ -48,10 +48,7 @@ func (s *PGEmployeeRepoTestSuite) TestSave() {
 		err := s.employeeRepo.Save(s.ctx, &testEmployee)
 		s.Require().NoError(err)
 
-		var savedEmployee model.Employee
-		err = s.pool.QueryRow(s.ctx, "select id, username, password_hash, balance from employees where id = $1", testEmployee.Id).
-			Scan(&savedEmployee.Id, &savedEmployee.Username, &savedEmployee.PasswordHash, &savedEmployee.Balance)
-		s.Require().NoError(err)
+		savedEmployee := s.selectEmployeeById(testEmployee.Id)
 
 		s.Require().Equal(testEmployee.Id, savedEmployee.Id)
 		s.Require().Equal(testEmployee.Username, savedEmployee.Username)
@@ -80,10 +77,7 @@ func (s *PGEmployeeRepoTestSuite) TestFindByUsername() {
 		Balance:      1,
 	}
 
-	_, err := s.pool.Exec(s.ctx,
-		"insert into employees(id, username, password_hash, balance) values ($1, $2, $3, $4)",
-		testEmployee.Id, testEmployee.Username, testEmployee.PasswordHash, testEmployee.Balance)
-	s.Require().NoError(err)
+	s.insertEmployee(&testEmployee)
 
 	s.Run("should find employee by username", func() {
 		employee, err := s.employeeRepo.FindByUsername(s.ctx, testEmployee.Username)
@@ -110,10 +104,7 @@ func (s *PGEmployeeRepoTestSuite) TestUpdateByUsername() {
 		Balance:      1,
 	}
 
-	_, err := s.pool.Exec(s.ctx,
-		"insert into employees(id, username, password_hash, balance) values ($1, $2, $3, $4)",
-		testEmployee.Id, testEmployee.Username, testEmployee.PasswordHash, testEmployee.Balance)
-	s.Require().NoError(err)
+	s.insertEmployee(&testEmployee)
 
 	s.Run("should update employee", func() {
 		newPasswordHash := "new passwordHash"
@@ -125,13 +116,10 @@ func (s *PGEmployeeRepoTestSuite) TestUpdateByUsername() {
 			Balance:      newBalance,
 		}
 
-		err = s.employeeRepo.UpdateByUsername(s.ctx, testEmployee.Username, updatedEmployee)
+		err := s.employeeRepo.UpdateByUsername(s.ctx, testEmployee.Username, updatedEmployee)
 		s.Require().NoError(err)
 
-		var savedEmployee model.Employee
-		err = s.pool.QueryRow(s.ctx, "select id, username, password_hash, balance from employees where id = $1", testEmployee.Id).
-			Scan(&savedEmployee.Id, &savedEmployee.Username, &savedEmployee.PasswordHash, &savedEmployee.Balance)
-		s.Require().NoError(err)
+		savedEmployee := s.selectEmployeeById(testEmployee.Id)
 
 		s.Require().Equal(updatedEmployee.Id, savedEmployee.Id)
 		s.Require().Equal(updatedEmployee.Username, savedEmployee.Username)
@@ -149,7 +137,22 @@ func (s *PGEmployeeRepoTestSuite) TestUpdateByUsername() {
 			Balance:      newBalance,
 		}
 
-		err = s.employeeRepo.UpdateByUsername(s.ctx, "non existing id", updatedEmployee)
+		err := s.employeeRepo.UpdateByUsername(s.ctx, "non existing id", updatedEmployee)
 		s.Require().NoError(err)
 	})
+}
+
+func (s *PGEmployeeRepoTestSuite) insertEmployee(e *model.Employee) {
+	_, err := s.pool.Exec(s.ctx,
+		"insert into employees(id, username, password_hash, balance) values ($1, $2, $3, $4)",
+		e.Id, e.Username, e.PasswordHash, e.Balance)
+	s.Require().NoError(err)
+}
+
+func (s *PGEmployeeRepoTestSuite) selectEmployeeById(id uuid.UUID) *model.Employee {
+	var savedEmployee model.Employee
+	err := s.pool.QueryRow(s.ctx, "select id, username, password_hash, balance from employees where id = $1", id).
+		Scan(&savedEmployee.Id, &savedEmployee.Username, &savedEmployee.PasswordHash, &savedEmployee.Balance)
+	s.Require().NoError(err)
+	return &savedEmployee
 }

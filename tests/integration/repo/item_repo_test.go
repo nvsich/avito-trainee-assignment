@@ -43,10 +43,7 @@ func (s *PGItemRepoTestSuite) TestFindByName() {
 		Price: 100,
 	}
 
-	_, err := s.pool.Exec(s.ctx,
-		"insert into items(id, name, price) values ($1, $2, $3)",
-		testItem.Id, testItem.Name, testItem.Price)
-	s.Require().NoError(err)
+	s.insertItem(&testItem)
 
 	s.Run("should find item by name", func() {
 		item, err := s.itemRepo.FindByName(s.ctx, testItem.Name)
@@ -71,10 +68,7 @@ func (s *PGItemRepoTestSuite) TestPGItemRepo_FindById() {
 		Price: 100,
 	}
 
-	_, err := s.pool.Exec(s.ctx,
-		"insert into items(id, name, price) values ($1, $2, $3)",
-		testItem.Id, testItem.Name, testItem.Price)
-	s.Require().NoError(err)
+	s.insertItem(&testItem)
 
 	s.Run("should find item by id", func() {
 		item, err := s.itemRepo.FindById(s.ctx, testItem.Id)
@@ -91,4 +85,11 @@ func (s *PGItemRepoTestSuite) TestPGItemRepo_FindById() {
 		s.Require().ErrorIs(err, repo.ErrItemNotFound)
 		s.Require().Nil(item)
 	})
+}
+
+func (s *PGItemRepoTestSuite) insertItem(item *model.Item) {
+	_, err := s.pool.Exec(s.ctx,
+		"insert into items(id, name, price) values ($1, $2, $3)",
+		item.Id, item.Name, item.Price)
+	s.Require().NoError(err)
 }

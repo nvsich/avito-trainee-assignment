@@ -55,10 +55,7 @@ func (s *PGTransferRepoTestSuite) TestSave() {
 		err := s.transferRepo.Save(s.ctx, &testTransfer)
 		s.Require().NoError(err)
 
-		var savedTransfer model.Transfer
-		err = s.pool.QueryRow(s.ctx, "select id, from_employee, to_employee, amount from transfers").
-			Scan(&savedTransfer.Id, &savedTransfer.FromEmployee, &savedTransfer.ToEmployee, &savedTransfer.Amount)
-		s.Require().NoError(err)
+		savedTransfer := s.selectTransferById(testTransfer.Id)
 
 		s.Require().Equal(testTransfer.Id, savedTransfer.Id)
 		s.Require().Equal(testTransfer.FromEmployee, savedTransfer.FromEmployee)
@@ -89,11 +86,7 @@ func (s *PGTransferRepoTestSuite) TestFindAllForReceiverGroupedBySenders() {
 	}
 
 	for _, transfer := range testTransfers {
-		_, err := s.pool.Exec(s.ctx,
-			"insert into transfers (id, from_employee, to_employee, amount) values ($1, $2, $3, $4)",
-			transfer.Id, transfer.FromEmployee, transfer.ToEmployee, transfer.Amount)
-
-		s.Require().NoError(err)
+		s.insertTransfer(&transfer)
 	}
 
 	s.Run("should return grouped transactions for receiver", func() {
@@ -134,11 +127,7 @@ func (s *PGTransferRepoTestSuite) TestFindAllForSenderGroupedByReceivers() {
 	}
 
 	for _, transfer := range testTransfers {
-		_, err := s.pool.Exec(s.ctx,
-			"insert into transfers (id, from_employee, to_employee, amount) VALUES ($1, $2, $3, $4)",
-			transfer.Id, transfer.FromEmployee, transfer.ToEmployee, transfer.Amount)
-
-		s.Require().NoError(err)
+		s.insertTransfer(&transfer)
 	}
 
 	s.Run("should return grouped transactions for sender", func() {
@@ -162,4 +151,20 @@ func (s *PGTransferRepoTestSuite) insertEmployee(employeeId uuid.UUID, username 
 		"insert into employees (id, username, password_hash, balance) VALUES ($1, $2, 'hash', 1000)",
 		employeeId, username)
 	s.Require().NoError(err)
+}
+
+func (s *PGTransferRepoTestSuite) insertTransfer(transfer *model.Transfer) {
+	_, err := s.pool.Exec(s.ctx,
+		"insert into transfers (id, from_employee, to_employee, amount) VALUES ($1, $2, $3, $4)",
+		transfer.Id, transfer.FromEmployee, transfer.ToEmployee, transfer.Amount)
+
+	s.Require().NoError(err)
+}
+
+func (s *PGTransferRepoTestSuite) selectTransferById(id uuid.UUID) *model.Transfer {
+	var savedTransfer model.Transfer
+	err := s.pool.QueryRow(s.ctx, "select id, from_employee, to_employee, amount from transfers where id = $1", id).
+		Scan(&savedTransfer.Id, &savedTransfer.FromEmployee, &savedTransfer.ToEmployee, &savedTransfer.Amount)
+	s.Require().NoError(err)
+	return &savedTransfer
 }
