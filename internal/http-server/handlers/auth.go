@@ -66,7 +66,7 @@ func NewAuthHandlerFunc(log *slog.Logger, authService Auth) http.HandlerFunc {
 			log.Error("failed to authorize", sl.Err(err))
 
 			render.Status(r, http.StatusInternalServerError)
-			render.JSON(w, r, resp.ErrorResponse{Errors: "failed to authorize"})
+			render.JSON(w, r, resp.ErrorResponse{Errors: "internal error"})
 			return
 		}
 
