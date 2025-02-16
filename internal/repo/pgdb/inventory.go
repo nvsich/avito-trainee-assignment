@@ -51,6 +51,7 @@ func (r *PgInventoryRepo) FindAllInventoryItemsByEmployee(
 		Select("items.name, sum(employee_inventory.amount) as amount").
 		From("employee_inventory").
 		LeftJoin("items on items.id = employee_inventory.item_id").
+		Where("employee_inventory.employee_id = ?", employeeId).
 		GroupBy("items.name").
 		ToSql()
 
