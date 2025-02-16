@@ -1,7 +1,7 @@
 package repo
 
 import (
-	"avito-shop/tests/integration/setup"
+	"avito-shop/tests/setup"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/stretchr/testify/suite"
 	"testing"
