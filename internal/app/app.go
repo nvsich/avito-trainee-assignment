@@ -13,8 +13,8 @@ import (
 	"time"
 )
 
-func Run(configPath string) {
-	cfg := config.MustLoad(configPath)
+func Run(envPath string) {
+	cfg := config.MustLoad(envPath)
 	log := mustSetupLogger(cfg.Log.Level)
 	pg, trManager := mustSetupDatabase(cfg, log)
 	defer pg.Close()

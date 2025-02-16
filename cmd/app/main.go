@@ -1,11 +1,14 @@
 package main
 
-import "avito-shop/internal/app"
-
-// TODO: think about adding as flag
-
-const configPath = "./config/config.yaml"
+import (
+	"avito-shop/internal/app"
+	"flag"
+)
 
 func main() {
-	app.Run(configPath)
+	var envPath string
+	flag.StringVar(&envPath, "env-path", ".env", "path to .env")
+	flag.Parse()
+
+	app.Run(envPath)
 }

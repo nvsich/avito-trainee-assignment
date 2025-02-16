@@ -1,11 +1,15 @@
-FROM golang:1.22
+FROM golang:1.23-alpine AS builder
 
-WORKDIR ${GOPATH}/avito-shop/
-COPY . ${GOPATH}/avito-shop/
+COPY . /avito-shop/source/
+WORKDIR /avito-shop/source/
 
-RUN go build -o /build ./cmd/app \
-    && go clean -cache -modcache
+RUN go build -o ./bin/avito-shop cmd/app/main.go
 
-EXPOSE 8080
+FROM alpine:3.13
 
-CMD ["/build"]
+WORKDIR /root/
+
+COPY --from=builder /avito-shop/source/bin/ .
+COPY --from=builder /avito-shop/source/docker.env .
+
+CMD ["sh", "-c", "./avito-shop --env-path=docker.env"]

@@ -10,7 +10,7 @@ import (
 )
 
 func mustSetupDatabase(cfg *config.Config, log *slog.Logger) (*pgdb.Postgres, *manager.Manager) {
-	pg, err := pgdb.New(cfg.PG.URL, cfg.MaxPoolSize)
+	pg, err := pgdb.New(cfg.PG.ConnectionString(), cfg.MaxPoolSize)
 	if err != nil {
 		log.Error("failed to connect to database", sl.Err(err))
 		panic(err)
