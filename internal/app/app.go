@@ -27,7 +27,7 @@ func Run(envPath string) {
 		log.Info("starting server", slog.String("addr", server.Addr))
 
 		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			log.Error("listen: %s\n", err)
+			log.Error("server failed", sl.Err(err))
 		}
 	}()
 
@@ -44,10 +44,8 @@ func Run(envPath string) {
 		log.Error("failed to shutdown server", sl.Err(err))
 	}
 
-	select {
-	case <-ctx.Done():
-		log.Info("context done, shutting down server...")
-	}
+	<-ctx.Done()
+	log.Info("context done, shutting down server...")
 
 	log.Info("server stopped")
 }

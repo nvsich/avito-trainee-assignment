@@ -25,7 +25,8 @@ func TestItemService_Buy(t *testing.T) {
 				employeeID := uuid.New()
 				employee := &model.Employee{Id: employeeID, Username: "test_user", Balance: 1000}
 				item := &model.Item{Id: uuid.New(), Name: "Item1", Price: 500}
-				employeeInventory := &model.EmployeeInventory{Id: uuid.New(), EmployeeId: employeeID, ItemId: item.Id, Amount: 1}
+				employeeInventory := &model.EmployeeInventory{
+					Id: uuid.New(), EmployeeId: employeeID, ItemId: item.Id, Amount: 1}
 
 				mer.On("FindByUsername", mock.Anything, "test_user").
 					Return(employee, nil)

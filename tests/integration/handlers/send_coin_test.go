@@ -8,6 +8,7 @@ import (
 	"avito-shop/internal/service"
 	"context"
 	"encoding/json"
+	"github.com/go-playground/validator/v10"
 	"github.com/golang-jwt/jwt"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -35,6 +36,7 @@ func TestNewSendCoinsHandlerFunc(t *testing.T) {
 	validReceiver := "receiver-user"
 	validAmount := 100
 	validEmployeeId := uuid.New()
+	vld := validator.New()
 
 	tests := []struct {
 		name           string
@@ -110,7 +112,7 @@ func TestNewSendCoinsHandlerFunc(t *testing.T) {
 
 			req := tc.setup(mockTransferService)
 
-			handler := handlers.NewSendCoinsHandlerFunc(logger, mockTransferService)
+			handler := handlers.NewSendCoinsHandlerFunc(logger, mockTransferService, vld)
 			w := httptest.NewRecorder()
 			handler.ServeHTTP(w, req)
 

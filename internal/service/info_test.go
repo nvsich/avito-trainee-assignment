@@ -28,17 +28,22 @@ func TestInfoService_Get(t *testing.T) {
 				coinHistorySent := []model.CoinTransaction{{User: "receiver", Amount: 50}}
 				coinHistoryReceived := []model.CoinTransaction{{User: "sender", Amount: 30}}
 
-				mer.On("FindByUsername", mock.Anything, "test_user").Return(employee, nil)
-				mir.On("FindAllInventoryItemsByEmployee", mock.Anything, employeeID).Return(inventoryItems, nil)
-				mtr.On("FindAllForSenderGroupedByReceivers", mock.Anything, employeeID).Return(coinHistorySent, nil)
-				mtr.On("FindAllForReceiverGroupedBySenders", mock.Anything, employeeID).Return(coinHistoryReceived, nil)
+				mer.On("FindByUsername", mock.Anything, "test_user").
+					Return(employee, nil)
+				mir.On("FindAllInventoryItemsByEmployee", mock.Anything, employeeID).
+					Return(inventoryItems, nil)
+				mtr.On("FindAllForSenderGroupedByReceivers", mock.Anything, employeeID).
+					Return(coinHistorySent, nil)
+				mtr.On("FindAllForReceiverGroupedBySenders", mock.Anything, employeeID).
+					Return(coinHistoryReceived, nil)
 			},
 			expectedError: nil,
 		},
 		{
 			name: "employee not found",
 			setup: func(mer *mockEmployeeRepo, mir *mockInventoryRepo, mtr *mockTransferRepo) {
-				mer.On("FindByUsername", mock.Anything, "test_user").Return(nil, repo.ErrEmployeeNotFound)
+				mer.On("FindByUsername", mock.Anything, "test_user").
+					Return(nil, repo.ErrEmployeeNotFound)
 			},
 			expectedError: ErrEmployeeNotFound,
 		},
@@ -48,8 +53,10 @@ func TestInfoService_Get(t *testing.T) {
 				employeeID := uuid.New()
 				employee := &model.Employee{Id: employeeID, Username: "test_user", Balance: 1000}
 
-				mer.On("FindByUsername", mock.Anything, "test_user").Return(employee, nil)
-				mir.On("FindAllInventoryItemsByEmployee", mock.Anything, employeeID).Return(nil, errors.New("inventory error"))
+				mer.On("FindByUsername", mock.Anything, "test_user").
+					Return(employee, nil)
+				mir.On("FindAllInventoryItemsByEmployee", mock.Anything, employeeID).
+					Return(nil, errors.New("inventory error"))
 			},
 			expectedError: errors.New("inventory error"),
 		},
@@ -60,7 +67,8 @@ func TestInfoService_Get(t *testing.T) {
 			mockEmployeeRepo := new(mockEmployeeRepo)
 			mockInventoryRepo := new(mockInventoryRepo)
 			mockTransferRepo := new(mockTransferRepo)
-			infoService := NewInfoService(mockTrManager, mockEmployeeRepo, mockInventoryRepo, mockTransferRepo, nil)
+			infoService := NewInfoService(
+				mockTrManager, mockEmployeeRepo, mockInventoryRepo, mockTransferRepo, nil)
 
 			tc.setup(mockEmployeeRepo, mockInventoryRepo, mockTransferRepo)
 

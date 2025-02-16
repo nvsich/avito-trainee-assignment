@@ -6,7 +6,7 @@ stop:
 
 e2e-stand:
 	docker compose -f=./docker-compose.e2e.yaml --env-file=docker.e2e.env up -d --build
-	go run ./cmd/app --env-path=local.e2e.env
+	#go run ./cmd/app --env-path=local.e2e.env - запускать отдельно (пробовал в разных окружениях, где-то работает полный скрипт, а где-то нет)
 
 test:
 	go test -v ./...

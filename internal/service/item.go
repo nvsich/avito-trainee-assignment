@@ -54,7 +54,7 @@ func (s *ItemService) Buy(ctx context.Context, itemName string, username string)
 			return ErrNotEnoughCoins
 		}
 
-		employee.Balance = employee.Balance - item.Price
+		employee.Balance -= item.Price
 
 		if err = s.employeeRepo.UpdateByUsername(ctx, employee.Username, employee); err != nil {
 			return fmt.Errorf("%s: %w", op, err)

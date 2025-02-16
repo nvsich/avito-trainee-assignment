@@ -45,7 +45,8 @@ func TestAuthService_Authorize(t *testing.T) {
 				mockRepo.ExpectedCalls = nil
 
 				mockRepo.On("FindByUsername", mock.Anything, existingUsername).
-					Return(&model.Employee{Id: existingUserID, Username: existingUsername, PasswordHash: string(hashedPassword)}, nil)
+					Return(&model.Employee{
+						Id: existingUserID, Username: existingUsername, PasswordHash: string(hashedPassword)}, nil)
 			},
 			username:      existingUsername,
 			password:      password,
@@ -58,7 +59,8 @@ func TestAuthService_Authorize(t *testing.T) {
 				mockRepo.ExpectedCalls = nil
 
 				mockRepo.On("FindByUsername", mock.Anything, existingUsername).
-					Return(&model.Employee{Id: existingUserID, Username: existingUsername, PasswordHash: string(hashedPassword)}, nil)
+					Return(&model.Employee{
+						Id: existingUserID, Username: existingUsername, PasswordHash: string(hashedPassword)}, nil)
 			},
 			username:      existingUsername,
 			password:      "wrong-password",
@@ -98,9 +100,10 @@ func TestAuthService_Authorize(t *testing.T) {
 			if tc.expectToken {
 				assert.NotEmpty(t, token)
 
-				parsedToken, _ := jwt.ParseWithClaims(token, &TokenClaims{}, func(token *jwt.Token) (interface{}, error) {
-					return []byte(signKey), nil
-				})
+				parsedToken, _ := jwt.ParseWithClaims(token, &TokenClaims{},
+					func(token *jwt.Token) (interface{}, error) {
+						return []byte(signKey), nil
+					})
 
 				assert.NotNil(t, parsedToken)
 			} else {

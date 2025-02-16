@@ -7,8 +7,9 @@ import (
 )
 
 func TBuy(t *testing.T) {
+	const password = "test-password"
 	username := generateUsername("buy-user")
-	password := "test-password"
+
 	token, err := getAuthToken(username, password)
 	if err != nil {
 		t.Fatalf("failed to get auth token: %v", err)

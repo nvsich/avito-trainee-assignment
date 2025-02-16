@@ -38,15 +38,15 @@ func TestNewInfoHandlerFunc(t *testing.T) {
 	validEmployeeInfo := &model.EmployeeInfo{
 		Coins: 123,
 		Inventory: []model.InventoryItem{
-			{"test-item", 1},
-			{"test-item-1", 2},
+			{Type: "test-item", Quantity: 1},
+			{Type: "test-item-1", Quantity: 2},
 		},
 		CoinHistory: model.CoinHistory{
 			Received: []model.CoinTransaction{
-				{"from-test-user", 111},
+				{User: "from-test-user", Amount: 111},
 			},
 			Sent: []model.CoinTransaction{
-				{"to-test-user", 222},
+				{User: "to-test-user", Amount: 222},
 			},
 		},
 	}

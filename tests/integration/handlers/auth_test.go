@@ -10,6 +10,7 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/go-chi/chi/v5"
+	"github.com/go-playground/validator/v10"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"log/slog"
@@ -30,7 +31,7 @@ func (m *mockAuthService) Authorize(ctx context.Context, username, password stri
 
 func setupAuthRouter(log *slog.Logger, authService *mockAuthService) http.Handler {
 	r := chi.NewRouter()
-	r.Post("/api/auth", handlers.NewAuthHandlerFunc(log, authService))
+	r.Post("/api/auth", handlers.NewAuthHandlerFunc(log, authService, validator.New()))
 	return r
 }
 
@@ -70,7 +71,8 @@ func TestAuthHandler(t *testing.T) {
 				if err != nil {
 					return nil, err
 				}
-				mockAuth.On("Authorize", mock.Anything, validUser, wrongPassword).Return("", service.ErrInvalidCredentials)
+				mockAuth.On("Authorize", mock.Anything, validUser, wrongPassword).
+					Return("", service.ErrInvalidCredentials)
 				return reqBody, nil
 			},
 			expectedStatus: http.StatusUnauthorized,
@@ -83,7 +85,8 @@ func TestAuthHandler(t *testing.T) {
 				if err != nil {
 					return nil, err
 				}
-				mockAuth.On("Authorize", mock.Anything, validUser, validPassword).Return("", errors.New("internal error"))
+				mockAuth.On("Authorize", mock.Anything, validUser, validPassword).
+					Return("", errors.New("internal error"))
 				return reqBody, nil
 			},
 			expectedStatus: http.StatusInternalServerError,

@@ -2,14 +2,11 @@ package handlers
 
 import (
 	"avito-shop/internal/http-server/dto"
-	resp "avito-shop/internal/http-server/dto/response"
-	mw "avito-shop/internal/http-server/middleware"
 	"avito-shop/internal/lib/logger/sl"
 	"avito-shop/internal/model"
 	"avito-shop/internal/service"
 	"context"
 	"errors"
-	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/render"
 	"log/slog"
 	"net/http"
@@ -22,39 +19,32 @@ type Info interface {
 func NewInfoHandlerFunc(log *slog.Logger, infoService Info) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "http-server.handlers.NewInfoHandlerFunc"
+		log = setupLogger(log, op, r)
 
-		log = log.With(
-			slog.String("operation", op),
-			slog.String("request_id", middleware.GetReqID(r.Context())),
-		)
-
-		claims, ok := r.Context().Value(mw.UserContextKey).(*service.TokenClaims)
-		if !ok || claims == nil {
-			log.Error("failed to get claims from context")
-
-			render.Status(r, http.StatusInternalServerError)
-			render.JSON(w, r, resp.ErrorResponse{Errors: "internal server error"})
+		claims, ok := getClaimsFromContext(r, log)
+		if !ok {
+			renderError(w, r, http.StatusInternalServerError, "internal server error")
 			return
 		}
 
 		employeeInfo, err := infoService.Get(r.Context(), claims.Username)
-
 		if err != nil {
-			if errors.Is(err, service.ErrEmployeeNotFound) {
-				log.Error("failed to get employee info", sl.Err(err))
-
-				render.Status(r, http.StatusUnauthorized)
-				render.JSON(w, r, resp.ErrorResponse{Errors: "employee not found"})
-				return
-			}
-
-			log.Error("failed to get employee info", sl.Err(err))
-			render.Status(r, http.StatusInternalServerError)
-			render.JSON(w, r, resp.ErrorResponse{Errors: "internal server error"})
+			handleInfoError(w, r, log, err)
 			return
 		}
 
 		render.Status(r, http.StatusOK)
 		render.JSON(w, r, dto.ToInfoResponse(*employeeInfo))
 	}
+}
+
+func handleInfoError(w http.ResponseWriter, r *http.Request, log *slog.Logger, err error) {
+	if errors.Is(err, service.ErrEmployeeNotFound) {
+		log.Error("Employee not found", sl.Err(err))
+		renderError(w, r, http.StatusUnauthorized, "employee not found")
+		return
+	}
+
+	log.Error("Info retrieval failed", sl.Err(err))
+	renderError(w, r, http.StatusInternalServerError, "internal server error")
 }

@@ -18,7 +18,8 @@ type PgxPool interface {
 	SendBatch(ctx context.Context, b *pgx.Batch) pgx.BatchResults
 	Begin(ctx context.Context) (pgx.Tx, error)
 	BeginTx(ctx context.Context, txOptions pgx.TxOptions) (pgx.Tx, error)
-	CopyFrom(ctx context.Context, tableName pgx.Identifier, columnNames []string, rowSrc pgx.CopyFromSource) (int64, error)
+	CopyFrom(
+		ctx context.Context, tableName pgx.Identifier, columnNames []string, rowSrc pgx.CopyFromSource) (int64, error)
 	Ping(ctx context.Context) error
 }
 

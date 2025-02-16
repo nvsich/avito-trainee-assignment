@@ -81,8 +81,10 @@ func (s *PGInventoryRepoTestSuite) TestFindAllInventoryItemsByEmployee() {
 	s.insertEmployee(employeeId, "employee")
 	s.insertItem(itemId1, item1Name)
 	s.insertItem(itemId2, item2Name)
-	s.insertInventory(model.EmployeeInventory{Id: uuid.New(), EmployeeId: employeeId, ItemId: itemId1, Amount: item1Amount})
-	s.insertInventory(model.EmployeeInventory{Id: uuid.New(), EmployeeId: employeeId, ItemId: itemId2, Amount: item2Amount})
+	s.insertInventory(model.EmployeeInventory{
+		Id: uuid.New(), EmployeeId: employeeId, ItemId: itemId1, Amount: item1Amount})
+	s.insertInventory(model.EmployeeInventory{
+		Id: uuid.New(), EmployeeId: employeeId, ItemId: itemId2, Amount: item2Amount})
 
 	s.Run("should find all inventory items for employee", func() {
 		inventoryItems, err := s.inventoryRepo.FindAllInventoryItemsByEmployee(s.ctx, employeeId)

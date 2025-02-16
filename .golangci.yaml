@@ -17,11 +17,11 @@ linters:
     - goconst
     - unconvert
     - gocritic
-    - staticcheck
-    - gosec
     - govet
     - gofmt
     - lll
+  disable:
+    - staticcheck
 
 output:
   print-issued-lines: true

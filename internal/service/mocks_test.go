@@ -38,7 +38,8 @@ func (m *mockTransferRepo) Save(ctx context.Context, transfer *model.Transfer) e
 	return args.Error(0)
 }
 
-func (m *mockTransferRepo) FindAllForReceiverGroupedBySenders(ctx context.Context, receiverId uuid.UUID) ([]model.CoinTransaction, error) {
+func (m *mockTransferRepo) FindAllForReceiverGroupedBySenders(
+	ctx context.Context, receiverId uuid.UUID) ([]model.CoinTransaction, error) {
 	args := m.Called(ctx, receiverId)
 	if args.Get(0) != nil {
 		return args.Get(0).([]model.CoinTransaction), args.Error(1)
@@ -46,7 +47,8 @@ func (m *mockTransferRepo) FindAllForReceiverGroupedBySenders(ctx context.Contex
 	return nil, args.Error(1)
 }
 
-func (m *mockTransferRepo) FindAllForSenderGroupedByReceivers(ctx context.Context, senderId uuid.UUID) ([]model.CoinTransaction, error) {
+func (m *mockTransferRepo) FindAllForSenderGroupedByReceivers(
+	ctx context.Context, senderId uuid.UUID) ([]model.CoinTransaction, error) {
 	args := m.Called(ctx, senderId)
 	if args.Get(0) != nil {
 		return args.Get(0).([]model.CoinTransaction), args.Error(1)
@@ -83,7 +85,8 @@ func (m *mockInventoryRepo) Save(ctx context.Context, inventory *model.EmployeeI
 	return args.Error(0)
 }
 
-func (m *mockInventoryRepo) FindAllInventoryItemsByEmployee(ctx context.Context, employeeId uuid.UUID) ([]model.InventoryItem, error) {
+func (m *mockInventoryRepo) FindAllInventoryItemsByEmployee(
+	ctx context.Context, employeeId uuid.UUID) ([]model.InventoryItem, error) {
 	args := m.Called(ctx, employeeId)
 	if args.Get(0) != nil {
 		return args.Get(0).([]model.InventoryItem), args.Error(1)
@@ -91,7 +94,8 @@ func (m *mockInventoryRepo) FindAllInventoryItemsByEmployee(ctx context.Context,
 	return nil, args.Error(1)
 }
 
-func (m *mockInventoryRepo) FindByEmployeeAndItem(ctx context.Context, employeeId uuid.UUID, itemId uuid.UUID) (*model.EmployeeInventory, error) {
+func (m *mockInventoryRepo) FindByEmployeeAndItem(
+	ctx context.Context, employeeId uuid.UUID, itemId uuid.UUID) (*model.EmployeeInventory, error) {
 	args := m.Called(ctx, employeeId, itemId)
 	if args.Get(0) != nil {
 		return args.Get(0).(*model.EmployeeInventory), args.Error(1)
@@ -99,7 +103,8 @@ func (m *mockInventoryRepo) FindByEmployeeAndItem(ctx context.Context, employeeI
 	return nil, args.Error(1)
 }
 
-func (m *mockInventoryRepo) UpdateById(ctx context.Context, id uuid.UUID, employeeInventory *model.EmployeeInventory) error {
+func (m *mockInventoryRepo) UpdateById(
+	ctx context.Context, id uuid.UUID, employeeInventory *model.EmployeeInventory) error {
 	args := m.Called(ctx, id, employeeInventory)
 	return args.Error(0)
 }
