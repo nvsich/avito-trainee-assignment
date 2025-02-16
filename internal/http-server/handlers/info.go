@@ -23,7 +23,7 @@ func NewInfoHandlerFunc(log *slog.Logger, infoService Info) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "http-server.handlers.NewInfoHandlerFunc"
 
-		log.With(
+		log = log.With(
 			slog.String("operation", op),
 			slog.String("request_id", middleware.GetReqID(r.Context())),
 		)
@@ -45,7 +45,7 @@ func NewInfoHandlerFunc(log *slog.Logger, infoService Info) http.HandlerFunc {
 
 				// TODO: подумать над логикой тут и в других хэндлерах
 				render.Status(r, http.StatusBadRequest)
-				render.JSON(w, r, resp.ErrorResponse{Errors: ""})
+				render.JSON(w, r, resp.ErrorResponse{Errors: "employee not found"})
 				return
 			}
 

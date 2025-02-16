@@ -24,7 +24,7 @@ func NewBuyItemHandlerFunc(log *slog.Logger, buyItemService BuyItem) http.Handle
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "http-server.handlers.NewBuyItemHandlerFunc"
 
-		log.With(
+		log = log.With(
 			slog.String("operation", op),
 			slog.String("request_id", middleware.GetReqID(r.Context())),
 		)
