@@ -23,6 +23,19 @@
 
 Тестовая среда для интеграционных тестов создается с помощью `go-testcontainers`
 
+## Нагрузочное тестирование
+Выполнялось с помощью k6
+```
+http_req_blocked...............: avg=1.25ms  min=0s   med=0s    max=28.05ms  p(90)=1.9ms    p(95)=6.66ms
+http_req_connecting............: avg=1.2ms   min=0s   med=0s    max=28.05ms  p(90)=1.55ms   p(95)=6.66ms
+http_req_duration..............: avg=1.31s   min=13ms med=1.22s max=3.64s    p(90)=3.33s    p(95)=3.44s
+  { expected_response:true }...: avg=1.31s   min=13ms med=1.22s max=3.64s    p(90)=3.33s    p(95)=3.44s
+http_req_failed................: 0.00%   0 out of 200
+http_req_receiving.............: avg=5.26ms  min=0s   med=0s    max=246.47ms p(90)=999.53µs p(95)=6.59ms
+http_req_sending...............: avg=57.96µs min=0s   med=0s    max=1ms      p(90)=0s       p(95)=515.75µs
+http_req_tls_handshaking.......: avg=0s      min=0s   med=0s    max=0s       p(90)=0s       p(95)=0s
+http_req_waiting...............: avg=1.31s   min=13ms med=1.22s max=3.64s    p(90)=3.26s    p(95)=3.44s
+```
 
 ## Проблемы, возникшие в ходе решения
 
