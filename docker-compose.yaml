@@ -21,6 +21,23 @@ services:
     networks:
       - internal
 
+  migrations:
+    image: migrate/migrate
+    container_name: migrate
+    volumes:
+      - ./migrations:/migrations
+    depends_on:
+      db:
+        condition: service_healthy
+    entrypoint: [
+      "migrate",
+      "-path", "/migrations",
+      "-database", "postgres://postgres:password@db:5432/shop?sslmode=disable",
+      "up"
+    ]
+    networks:
+      - internal
+
   db:
     image: postgres:13
     container_name: postgres
@@ -29,17 +46,17 @@ services:
       POSTGRES_PASSWORD: password
       POSTGRES_DB: shop
     volumes:
-      # "./migrations/init.sql" - путь к миграциям БД
-      - ./migrations/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./migrations:/migrations
     ports:
       - "5432:5432"
     healthcheck:
-      test: ["CMD-SHELL", "sh -c 'pg_isready -U postgres -d shop'"]
+      test: [ "CMD-SHELL", "sh -c 'pg_isready -U postgres -d shop'" ]
       interval: 5s
       timeout: 10s
       retries: 5
       start_period: 10s
     networks:
       - internal
+
 networks:
   internal:
