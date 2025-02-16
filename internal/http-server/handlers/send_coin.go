@@ -23,7 +23,7 @@ func NewSendCoinsHandlerFunc(log *slog.Logger, transferService Transfer) http.Ha
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "http-server.handlers.NewSendCoinsHandlerFunc"
 
-		log.With(
+		log = log.With(
 			slog.String("operation", op),
 			slog.String("request_id", middleware.GetReqID(r.Context())),
 		)
@@ -100,8 +100,8 @@ func NewSendCoinsHandlerFunc(log *slog.Logger, transferService Transfer) http.Ha
 			if errors.Is(err, service.ErrSenderNotFound) {
 				log.Info("failed to send coins", sl.Err(err))
 
-				render.Status(r, http.StatusBadRequest)
-				render.JSON(w, r, resp.ErrorResponse{Errors: "intern"})
+				render.Status(r, http.StatusInternalServerError)
+				render.JSON(w, r, resp.ErrorResponse{Errors: "internal server error"})
 				return
 			}
 

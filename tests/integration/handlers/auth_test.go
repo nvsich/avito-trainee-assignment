@@ -28,7 +28,7 @@ func (m *mockAuthService) Authorize(ctx context.Context, username, password stri
 	return args.String(0), args.Error(1)
 }
 
-func setupRouter(log *slog.Logger, authService *mockAuthService) http.Handler {
+func setupAuthRouter(log *slog.Logger, authService *mockAuthService) http.Handler {
 	r := chi.NewRouter()
 	r.Post("/api/auth", handlers.NewAuthHandlerFunc(log, authService))
 	return r
@@ -117,6 +117,18 @@ func TestAuthHandler(t *testing.T) {
 			expectedStatus: http.StatusBadRequest,
 			expectedBody:   response.ErrorResponse{Errors: "invalid request body"},
 		},
+		{
+			name: "missing password",
+			setup: func(mockAuth *mockAuthService) ([]byte, error) {
+				reqBody, err := json.Marshal(request.AuthRequest{Username: "", Password: validPassword})
+				if err != nil {
+					return nil, err
+				}
+				return reqBody, nil
+			},
+			expectedStatus: http.StatusBadRequest,
+			expectedBody:   response.ErrorResponse{Errors: "invalid request body"},
+		},
 	}
 
 	for _, tc := range tests {
@@ -127,7 +139,7 @@ func TestAuthHandler(t *testing.T) {
 			reqBody, err := tc.setup(mockAuthService)
 			assert.NoError(t, err)
 
-			r := setupRouter(logger, mockAuthService)
+			r := setupAuthRouter(logger, mockAuthService)
 
 			req := httptest.NewRequest(http.MethodPost, "/api/auth", bytes.NewReader(reqBody))
 			req.Header.Set("Content-Type", "application/json")
