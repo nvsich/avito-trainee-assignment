@@ -1,0 +1,28 @@
+run:
+  timeout: 5m
+
+linters-settings:
+  gofmt:
+    simplify: true
+  lll:
+    line-length: 120
+    tab-width: 4
+
+linters:
+  enable:
+    - gocyclo
+    - errcheck
+    - unused
+    - sloglint
+    - goconst
+    - unconvert
+    - gocritic
+    - staticcheck
+    - gosec
+    - govet
+    - gofmt
+    - lll
+
+output:
+  print-issued-lines: true
+  print-linter-name: true
