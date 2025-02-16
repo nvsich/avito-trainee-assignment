@@ -50,8 +50,6 @@ func NewSendCoinsHandlerFunc(log *slog.Logger, transferService Transfer) http.Ha
 			return
 		}
 
-		log.Debug("validation passed")
-
 		claims, ok := r.Context().Value(mw.UserContextKey).(*service.TokenClaims)
 		if !ok || claims == nil {
 			log.Error("failed to get claims from context")

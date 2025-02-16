@@ -38,43 +38,16 @@ func NewAuthService(
 }
 
 func (s *AuthService) Authorize(ctx context.Context, username string, password string) (string, error) {
-	const op = "service.AuthService.Authenticate"
+	const op = "service.AuthService.Authorize"
 
 	var token string
-
 	err := s.trManager.Do(ctx, func(ctx context.Context) error {
-		employee, err := s.employeeRepo.FindByUsername(ctx, username)
-
+		employee, err := s.getOrCreateEmployee(ctx, username, password)
 		if err != nil {
-			if errors.Is(err, repo.ErrEmployeeNotFound) {
-				hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-				if err != nil {
-					return fmt.Errorf("%s: %w", op, err)
-				}
-
-				newEmployee := &model.Employee{
-					Id:           uuid.New(),
-					Username:     username,
-					PasswordHash: string(hashedPassword),
-					Balance:      newEmployeeInitialBalance,
-				}
-
-				err = s.employeeRepo.Save(ctx, newEmployee)
-				if err != nil {
-					return fmt.Errorf("%s: %w", op, err)
-				}
-
-				token, err = s.generateJWT(newEmployee.Id, newEmployee.Username)
-				if err != nil {
-					return fmt.Errorf("%s: %w", op, err)
-				}
-				return nil
-			}
-
 			return fmt.Errorf("%s: %w", op, err)
 		}
 
-		if err = bcrypt.CompareHashAndPassword([]byte(employee.PasswordHash), []byte(password)); err != nil {
+		if err = s.verifyPassword(employee.PasswordHash, password); err != nil {
 			return ErrInvalidCredentials
 		}
 
@@ -82,10 +55,46 @@ func (s *AuthService) Authorize(ctx context.Context, username string, password s
 		if err != nil {
 			return fmt.Errorf("%s: %w", op, err)
 		}
+
 		return nil
 	})
 
 	return token, err
+}
+
+func (s *AuthService) getOrCreateEmployee(ctx context.Context, username, password string) (*model.Employee, error) {
+	employee, err := s.employeeRepo.FindByUsername(ctx, username)
+	if err != nil {
+		if errors.Is(err, repo.ErrEmployeeNotFound) {
+			return s.createNewEmployee(ctx, username, password)
+		}
+		return nil, err
+	}
+	return employee, nil
+}
+
+func (s *AuthService) createNewEmployee(ctx context.Context, username, password string) (*model.Employee, error) {
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return nil, err
+	}
+
+	newEmployee := &model.Employee{
+		Id:           uuid.New(),
+		Username:     username,
+		PasswordHash: string(hashedPassword),
+		Balance:      newEmployeeInitialBalance,
+	}
+
+	if err = s.employeeRepo.Save(ctx, newEmployee); err != nil {
+		return nil, err
+	}
+
+	return newEmployee, nil
+}
+
+func (s *AuthService) verifyPassword(storedHash, password string) error {
+	return bcrypt.CompareHashAndPassword([]byte(storedHash), []byte(password))
 }
 
 func (s *AuthService) generateJWT(id uuid.UUID, username string) (string, error) {

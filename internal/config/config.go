@@ -190,7 +190,7 @@ func getEnv(key string) (string, error) {
 func parseDuration(key string) (time.Duration, error) {
 	value, err := getEnv(key)
 	if err != nil {
-		return 0, err // Return the same error from getEnv
+		return 0, err
 	}
 
 	duration, err := time.ParseDuration(value)

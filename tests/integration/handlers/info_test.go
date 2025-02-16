@@ -94,7 +94,7 @@ func TestNewInfoHandlerFunc(t *testing.T) {
 				ctx := context.WithValue(req.Context(), mw.UserContextKey, claims)
 				return req.WithContext(ctx)
 			},
-			expectedStatus: http.StatusBadRequest,
+			expectedStatus: http.StatusUnauthorized,
 			expectedBody:   rep.ErrorResponse{Errors: "employee not found"},
 		},
 		{

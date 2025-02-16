@@ -43,8 +43,7 @@ func NewInfoHandlerFunc(log *slog.Logger, infoService Info) http.HandlerFunc {
 			if errors.Is(err, service.ErrEmployeeNotFound) {
 				log.Error("failed to get employee info", sl.Err(err))
 
-				// TODO: подумать над логикой тут и в других хэндлерах
-				render.Status(r, http.StatusBadRequest)
+				render.Status(r, http.StatusUnauthorized)
 				render.JSON(w, r, resp.ErrorResponse{Errors: "employee not found"})
 				return
 			}

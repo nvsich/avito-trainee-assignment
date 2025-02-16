@@ -100,9 +100,6 @@ func (s *PGInventoryRepoTestSuite) TestFindAllInventoryItemsByEmployee() {
 	})
 }
 
-//FindByEmployeeAndItem(ctx context.Context, employeeId uuid.UUID, itemId uuid.UUID) (*model.EmployeeInventory, error)
-//	UpdateById(ctx context.Context, id uuid.UUID, employeeInventory *model.EmployeeInventory) error
-
 func (s *PGInventoryRepoTestSuite) TestFindByEmployeeAndItem() {
 	employeeId := uuid.New()
 	employeeIdWithoutInventory := uuid.New()

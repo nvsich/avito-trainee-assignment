@@ -110,9 +110,10 @@ func runMigrations(ctx context.Context, dsn, networkName string) error {
 	if err != nil {
 		return err
 	}
-	defer migrateContainer.Terminate(ctx)
 
-	return nil
+	err = migrateContainer.Terminate(ctx)
+
+	return err
 }
 
 func getMigrationsPath() string {

@@ -11,8 +11,10 @@ import (
 
 func TAuth(t *testing.T) {
 	newUser := generateUsername("new user")
-	testPassword := "test-password"
-	wrongPassword := "wrong-password"
+	const (
+		testPassword  = "test-password"
+		wrongPassword = "wrong-password"
+	)
 	tests := []struct {
 		name           string
 		requestBody    AuthRequest

@@ -43,7 +43,6 @@ func NewBuyItemHandlerFunc(log *slog.Logger, buyItemService BuyItem) http.Handle
 		if !ok || claims == nil {
 			log.Error("failed to get claims from context")
 
-			// TODO: what if token contains not existing user?
 			render.Status(r, http.StatusInternalServerError)
 			render.JSON(w, r, resp.ErrorResponse{Errors: "internal server error"})
 			return

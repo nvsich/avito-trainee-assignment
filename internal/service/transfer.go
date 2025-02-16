@@ -33,8 +33,10 @@ func (s *TransferService) SendCoins(ctx context.Context, fromUsername string, to
 		return ErrTransferToSameEmployee
 	}
 
-	// TODO: decompose and think about needing transactions
-	// TODO: think about correctness of error handling here
+	if amount < 0 {
+		return ErrNegativeTransferAmount
+	}
+
 	err := s.trManager.Do(ctx, func(ctx context.Context) error {
 		fromEmployee, err := s.employeeRepo.FindByUsername(ctx, fromUsername)
 		if err != nil {
@@ -42,10 +44,6 @@ func (s *TransferService) SendCoins(ctx context.Context, fromUsername string, to
 				return ErrSenderNotFound
 			}
 			return fmt.Errorf("%s: %w", op, err)
-		}
-
-		if amount < 0 {
-			return ErrNegativeTransferAmount
 		}
 
 		if fromEmployee.Balance < amount {
@@ -60,8 +58,8 @@ func (s *TransferService) SendCoins(ctx context.Context, fromUsername string, to
 			return fmt.Errorf("%s: %w", op, err)
 		}
 
-		fromEmployee.Balance = fromEmployee.Balance - amount
-		toEmployee.Balance = toEmployee.Balance + amount
+		fromEmployee.Balance -= amount
+		toEmployee.Balance += amount
 
 		err = s.employeeRepo.UpdateByUsername(ctx, fromUsername, fromEmployee)
 		if err != nil {

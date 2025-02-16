@@ -11,7 +11,6 @@ var (
 	ErrSenderNotFound         = errors.New("sender not found")
 	ErrTransferToSameEmployee = errors.New("transfer to same employee")
 
-	ErrEmployeeNotFound  = errors.New("employee not found")
-	ErrItemNotFound      = errors.New("item not found")
-	ErrInventoryNotFound = errors.New("inventory not found")
+	ErrEmployeeNotFound = errors.New("employee not found")
+	ErrItemNotFound     = errors.New("item not found")
 )
