@@ -9,64 +9,47 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
+	"os"
+	"path/filepath"
 	"testing"
+	"time"
 )
-
-// TODO: ПЕРЕДЕЛАТЬ, ЧТОБЫ БРАТЬ ИЗ МИГРАЦИЙ!!!
-var initScript = `
-create table items
-(
-    id    uuid primary key,
-    name  text not null,
-    price int  not null
-);
-
-insert into items(id, name, price)
-values ('4ba3ad9c-07e2-45d5-9c3f-5c3ffcf2f6a5', 't-shirt', 80),
-       ('9d1423c4-f8a6-416c-af24-3b03e8f1594e', 'cup', 20),
-       ('2392fe7d-9d34-4d7f-9df0-4d5367ba5db8', 'book', 50),
-       ('72d74ee6-00d5-4f5d-b3d8-04c319cd0c4b', 'pen', 10),
-       ('4523eaa4-2fc2-4943-a9b4-a71f7a31b099', 'powerbank', 200),
-       ('ce64e97d-1a18-48ab-9974-607fbac8f58d', 'hoody', 300),
-       ('2cc578ec-8381-4944-a787-05d13fbae770', 'umbrella', 200),
-       ('8a3b7185-547c-4008-8e03-990f6cc437ba', 'socks', 10),
-       ('64a00672-9833-4fd8-8831-32c775375931', 'wallet', 50),
-       ('3d7db05a-035d-4e4e-b29c-a89f6513101c', 'pink-hoody', 500);
-
-create table employees
-(
-    id            uuid primary key,
-    username      text not null unique,
-    password_hash text not null,
-    balance       int  not null
-);
-
-create table employee_inventory
-(
-    id          uuid primary key,
-    employee_id uuid not null,
-    item_id     uuid not null,
-    amount      int  not null,
-
-    foreign key (employee_id) references employees (id),
-    foreign key (item_id) references items (id)
-);
-
-create table transfers
-(
-    id            uuid primary key,
-    from_employee uuid not null,
-    to_employee   uuid not null,
-    amount        int  not null,
-
-    foreign key (from_employee) references employees (id),
-    foreign key (to_employee) references employees (id)
-);
-`
 
 func TestPostgres(t *testing.T) (*pgxpool.Pool, func()) {
 	ctx := context.Background()
 
+	networkName := "test-network"
+	network, err := createNetwork(ctx, networkName)
+	require.NoError(t, err)
+
+	container, dsn, err := startPostgresContainer(ctx, networkName)
+	require.NoError(t, err)
+
+	pool, err := pgxpool.New(ctx, dsn)
+	require.NoError(t, err)
+
+	dsnForMigrations := "postgres://postgres:password@postgres:5432/shop_test?sslmode=disable"
+	require.NoError(t, runMigrations(ctx, dsnForMigrations, networkName))
+
+	cleanup := func() {
+		pool.Close()
+		_ = container.Terminate(ctx)
+		_ = network.Remove(ctx)
+	}
+
+	return pool, cleanup
+}
+
+func createNetwork(ctx context.Context, networkName string) (testcontainers.Network, error) {
+	return testcontainers.GenericNetwork(ctx, testcontainers.GenericNetworkRequest{
+		NetworkRequest: testcontainers.NetworkRequest{
+			Name:           networkName,
+			CheckDuplicate: true,
+		},
+	})
+}
+
+func startPostgresContainer(ctx context.Context, networkName string) (testcontainers.Container, string, error) {
 	req := testcontainers.ContainerRequest{
 		Image:        "postgres:13",
 		ExposedPorts: []string{"5432/tcp"},
@@ -75,38 +58,67 @@ func TestPostgres(t *testing.T) (*pgxpool.Pool, func()) {
 			"POSTGRES_PASSWORD": "password",
 			"POSTGRES_DB":       "shop_test",
 		},
-		WaitingFor: wait.ForSQL("5432/tcp", "pgx",
-			func(host string, port nat.Port) string {
-				portStr := port.Port()
-				return fmt.Sprintf("postgres://postgres:password@%s:%s/shop_test?sslmode=disable", host, portStr)
-			}),
+		WaitingFor: wait.ForSQL("5432/tcp", "pgx", func(host string, port nat.Port) string {
+			return fmt.Sprintf("postgres://postgres:password@%s:%s/shop_test?sslmode=disable", host, port.Port())
+		}),
+		Networks:       []string{networkName},
+		NetworkAliases: map[string][]string{networkName: {"postgres"}},
 	}
 
 	container, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
 		ContainerRequest: req,
 		Started:          true,
 	})
-
-	require.NoError(t, err)
-
-	host, err := container.Host(ctx)
-	require.NoError(t, err)
-
-	port, err := container.MappedPort(ctx, "5432")
-	require.NoError(t, err)
-
-	dsn := fmt.Sprintf("postgres://postgres:password@%s:%s/shop_test?sslmode=disable", host, port.Port())
-
-	pool, err := pgxpool.New(ctx, dsn)
-	require.NoError(t, err)
-
-	_, err = pool.Exec(ctx, initScript)
-	require.NoError(t, err)
-
-	cleanup := func() {
-		pool.Close()
-		_ = container.Terminate(ctx)
+	if err != nil {
+		return nil, "", err
 	}
 
-	return pool, cleanup
+	host, err := container.Host(ctx)
+	if err != nil {
+		return nil, "", err
+	}
+
+	port, err := container.MappedPort(ctx, "5432")
+	if err != nil {
+		return nil, "", err
+	}
+
+	dsn := fmt.Sprintf("postgres://postgres:password@%s:%s/shop_test?sslmode=disable", host, port.Port())
+	return container, dsn, nil
+}
+
+func runMigrations(ctx context.Context, dsn, networkName string) error {
+	migrationsPath := getMigrationsPath()
+
+	migrateReq := testcontainers.ContainerRequest{
+		Image: "migrate/migrate:v4.15.2",
+		Mounts: testcontainers.Mounts(
+			testcontainers.ContainerMount{
+				Source: testcontainers.GenericBindMountSource{HostPath: migrationsPath},
+				Target: "/migrations",
+			},
+		),
+		WaitingFor: wait.ForExit().WithExitTimeout(30 * time.Second),
+		Cmd:        []string{"-path", "/migrations", "-database", dsn, "up"},
+		Networks:   []string{networkName},
+	}
+
+	migrateContainer, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
+		ContainerRequest: migrateReq,
+		Started:          true,
+	})
+	if err != nil {
+		return err
+	}
+	defer migrateContainer.Terminate(ctx)
+
+	return nil
+}
+
+func getMigrationsPath() string {
+	wd, err := os.Getwd()
+	if err != nil {
+		panic(err)
+	}
+	return filepath.Join(wd, "../../..", "migrations")
 }
